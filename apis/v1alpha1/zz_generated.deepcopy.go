@@ -839,11 +839,6 @@ func (in *KeySpec) DeepCopyInto(out *KeySpec) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.CustomerMasterKeySpec != nil {
-		in, out := &in.CustomerMasterKeySpec, &out.CustomerMasterKeySpec
-		*out = new(string)
-		**out = **in
-	}
 	if in.Description != nil {
 		in, out := &in.Description, &out.Description
 		*out = new(string)
@@ -919,6 +914,11 @@ func (in *KeyStatus) DeepCopyInto(out *KeyStatus) {
 	if in.CreationDate != nil {
 		in, out := &in.CreationDate, &out.CreationDate
 		*out = (*in).DeepCopy()
+	}
+	if in.CustomerMasterKeySpec != nil {
+		in, out := &in.CustomerMasterKeySpec, &out.CustomerMasterKeySpec
+		*out = new(string)
+		**out = **in
 	}
 	if in.DeletionDate != nil {
 		in, out := &in.DeletionDate, &out.DeletionDate

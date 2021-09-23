@@ -55,39 +55,6 @@ type KeySpec struct {
 	// feature in AWS KMS, which combines the convenience and extensive integration
 	// of AWS KMS with the isolation and control of a single-tenant key store.
 	CustomKeyStoreID *string `json:"customKeyStoreID,omitempty"`
-	// Specifies the type of CMK to create. The default value, SYMMETRIC_DEFAULT,
-	// creates a CMK with a 256-bit symmetric key for encryption and decryption.
-	// For help choosing a key spec for your CMK, see How to Choose Your CMK Configuration
-	// (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose.html)
-	// in the AWS Key Management Service Developer Guide.
-	//
-	// The CustomerMasterKeySpec determines whether the CMK contains a symmetric
-	// key or an asymmetric key pair. It also determines the encryption algorithms
-	// or signing algorithms that the CMK supports. You can't change the CustomerMasterKeySpec
-	// after the CMK is created. To further restrict the algorithms that can be
-	// used with the CMK, use a condition key in its key policy or IAM policy. For
-	// more information, see kms:EncryptionAlgorithm (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-algorithm)
-	// or kms:Signing Algorithm (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-signing-algorithm)
-	// in the AWS Key Management Service Developer Guide.
-	//
-	// AWS services that are integrated with AWS KMS (http://aws.amazon.com/kms/features/#AWS_Service_Integration)
-	// use symmetric CMKs to protect your data. These services do not support asymmetric
-	// CMKs. For help determining whether a CMK is symmetric or asymmetric, see
-	// Identifying Symmetric and Asymmetric CMKs (https://docs.aws.amazon.com/kms/latest/developerguide/find-symm-asymm.html)
-	// in the AWS Key Management Service Developer Guide.
-	//
-	// AWS KMS supports the following key specs for CMKs:
-	//
-	//    * Symmetric key (default) SYMMETRIC_DEFAULT (AES-256-GCM)
-	//
-	//    * Asymmetric RSA key pairs RSA_2048 RSA_3072 RSA_4096
-	//
-	//    * Asymmetric NIST-recommended elliptic curve key pairs ECC_NIST_P256 (secp256r1)
-	//    ECC_NIST_P384 (secp384r1) ECC_NIST_P521 (secp521r1)
-	//
-	//    * Other asymmetric elliptic curve key pairs ECC_SECG_P256K1 (secp256k1),
-	//    commonly used for cryptocurrencies.
-	CustomerMasterKeySpec *string `json:"customerMasterKeySpec,omitempty"`
 	// A description of the CMK.
 	//
 	// Use a description that helps you decide whether the CMK is appropriate for
@@ -196,6 +163,9 @@ type KeyStatus struct {
 	// The date and time when the CMK was created.
 	// +kubebuilder:validation:Optional
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
+	// Describes the type of key material in the CMK.
+	// +kubebuilder:validation:Optional
+	CustomerMasterKeySpec *string `json:"customerMasterKeySpec,omitempty"`
 	// The date and time after which AWS KMS deletes the CMK. This value is present
 	// only when KeyState is PendingDeletion.
 	// +kubebuilder:validation:Optional

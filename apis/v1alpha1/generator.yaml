@@ -45,7 +45,10 @@ resources:
     hooks:
       sdk_read_many_post_build_request:
         code: |
-          // At most one of StoreID and StoreName are allowed
+          // At most one of Store ID and Store Name are allowed
           if input.CustomKeyStoreId != nil && input.CustomKeyStoreName != nil {
             input.CustomKeyStoreName = nil
           }
+ignore:
+  field_paths:
+    - CreateKeyInput.CustomerMasterKeySpec

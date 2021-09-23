@@ -106,9 +106,9 @@ func (rm *resourceManager) sdkFind(
 		ko.Spec.CustomKeyStoreID = nil
 	}
 	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
-		ko.Spec.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
+		ko.Status.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
 	} else {
-		ko.Spec.CustomerMasterKeySpec = nil
+		ko.Status.CustomerMasterKeySpec = nil
 	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		ko.Status.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
@@ -265,9 +265,9 @@ func (rm *resourceManager) sdkCreate(
 		ko.Spec.CustomKeyStoreID = nil
 	}
 	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
-		ko.Spec.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
+		ko.Status.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
 	} else {
-		ko.Spec.CustomerMasterKeySpec = nil
+		ko.Status.CustomerMasterKeySpec = nil
 	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		ko.Status.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
@@ -360,9 +360,6 @@ func (rm *resourceManager) newCreateRequestPayload(
 	if r.ko.Spec.CustomKeyStoreID != nil {
 		res.SetCustomKeyStoreId(*r.ko.Spec.CustomKeyStoreID)
 	}
-	if r.ko.Spec.CustomerMasterKeySpec != nil {
-		res.SetCustomerMasterKeySpec(*r.ko.Spec.CustomerMasterKeySpec)
-	}
 	if r.ko.Spec.Description != nil {
 		res.SetDescription(*r.ko.Spec.Description)
 	}
@@ -376,18 +373,18 @@ func (rm *resourceManager) newCreateRequestPayload(
 		res.SetPolicy(*r.ko.Spec.Policy)
 	}
 	if r.ko.Spec.Tags != nil {
-		f7 := []*svcsdk.Tag{}
-		for _, f7iter := range r.ko.Spec.Tags {
-			f7elem := &svcsdk.Tag{}
-			if f7iter.TagKey != nil {
-				f7elem.SetTagKey(*f7iter.TagKey)
+		f6 := []*svcsdk.Tag{}
+		for _, f6iter := range r.ko.Spec.Tags {
+			f6elem := &svcsdk.Tag{}
+			if f6iter.TagKey != nil {
+				f6elem.SetTagKey(*f6iter.TagKey)
 			}
-			if f7iter.TagValue != nil {
-				f7elem.SetTagValue(*f7iter.TagValue)
+			if f6iter.TagValue != nil {
+				f6elem.SetTagValue(*f6iter.TagValue)
 			}
-			f7 = append(f7, f7elem)
+			f6 = append(f6, f6elem)
 		}
-		res.SetTags(f7)
+		res.SetTags(f6)
 	}
 
 	return res, nil

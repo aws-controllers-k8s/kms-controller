@@ -49,3 +49,6 @@ resources:
           if input.CustomKeyStoreId != nil && input.CustomKeyStoreName != nil {
             input.CustomKeyStoreName = nil
           }
+ignore:
+  field_paths:
+    - CreateKeyInput.CustomerMasterKeySpec
