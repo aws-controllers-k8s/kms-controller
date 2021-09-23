@@ -30,4 +30,22 @@ resources:
             }
           }
           resp.Aliases = matchingAliases
-  
+  CustomKeyStore:
+    renames:
+      operations:
+        CreateCustomKeyStore:
+          input_fields:
+            CustomKeyStoreName: Name
+        DescribeCustomKeyStores:
+          input_fields:
+            CustomKeyStoreName: Name
+        DeleteCustomKeyStore:
+          input_fields:
+            CustomKeyStoreName: Name
+    hooks:
+      sdk_read_many_post_build_request:
+        code: |
+          // At most one of Store ID and Store Name are allowed
+          if input.CustomKeyStoreId != nil && input.CustomKeyStoreName != nil {
+            input.CustomKeyStoreName = nil
+          }

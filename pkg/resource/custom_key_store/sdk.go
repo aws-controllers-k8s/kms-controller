@@ -63,6 +63,10 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
+	// At most one of Store ID and Store Name are allowed
+	if input.CustomKeyStoreId != nil && input.CustomKeyStoreName != nil {
+		input.CustomKeyStoreName = nil
+	}
 	var resp *svcsdk.DescribeCustomKeyStoresOutput
 	resp, err = rm.sdkapi.DescribeCustomKeyStoresWithContext(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeCustomKeyStores", err)
@@ -90,9 +94,9 @@ func (rm *resourceManager) sdkFind(
 			ko.Status.CustomKeyStoreID = nil
 		}
 		if elem.CustomKeyStoreName != nil {
-			ko.Spec.CustomKeyStoreName = elem.CustomKeyStoreName
+			ko.Spec.Name = elem.CustomKeyStoreName
 		} else {
-			ko.Spec.CustomKeyStoreName = nil
+			ko.Spec.Name = nil
 		}
 		if elem.TrustAnchorCertificate != nil {
 			ko.Spec.TrustAnchorCertificate = elem.TrustAnchorCertificate
@@ -116,7 +120,7 @@ func (rm *resourceManager) sdkFind(
 func (rm *resourceManager) requiredFieldsMissingFromReadManyInput(
 	r *resource,
 ) bool {
-	return r.ko.Spec.CustomKeyStoreName == nil
+	return r.ko.Status.CustomKeyStoreID == nil
 
 }
 
@@ -130,8 +134,8 @@ func (rm *resourceManager) newListRequestPayload(
 	if r.ko.Status.CustomKeyStoreID != nil {
 		res.SetCustomKeyStoreId(*r.ko.Status.CustomKeyStoreID)
 	}
-	if r.ko.Spec.CustomKeyStoreName != nil {
-		res.SetCustomKeyStoreName(*r.ko.Spec.CustomKeyStoreName)
+	if r.ko.Spec.Name != nil {
+		res.SetCustomKeyStoreName(*r.ko.Spec.Name)
 	}
 
 	return res, nil
@@ -184,8 +188,8 @@ func (rm *resourceManager) newCreateRequestPayload(
 	if r.ko.Spec.CloudHsmClusterID != nil {
 		res.SetCloudHsmClusterId(*r.ko.Spec.CloudHsmClusterID)
 	}
-	if r.ko.Spec.CustomKeyStoreName != nil {
-		res.SetCustomKeyStoreName(*r.ko.Spec.CustomKeyStoreName)
+	if r.ko.Spec.Name != nil {
+		res.SetCustomKeyStoreName(*r.ko.Spec.Name)
 	}
 	if r.ko.Spec.KeyStorePassword != nil {
 		res.SetKeyStorePassword(*r.ko.Spec.KeyStorePassword)

@@ -48,18 +48,18 @@ func newResourceDelta(
 			delta.Add("Spec.CloudHsmClusterID", a.ko.Spec.CloudHsmClusterID, b.ko.Spec.CloudHsmClusterID)
 		}
 	}
-	if ackcompare.HasNilDifference(a.ko.Spec.CustomKeyStoreName, b.ko.Spec.CustomKeyStoreName) {
-		delta.Add("Spec.CustomKeyStoreName", a.ko.Spec.CustomKeyStoreName, b.ko.Spec.CustomKeyStoreName)
-	} else if a.ko.Spec.CustomKeyStoreName != nil && b.ko.Spec.CustomKeyStoreName != nil {
-		if *a.ko.Spec.CustomKeyStoreName != *b.ko.Spec.CustomKeyStoreName {
-			delta.Add("Spec.CustomKeyStoreName", a.ko.Spec.CustomKeyStoreName, b.ko.Spec.CustomKeyStoreName)
-		}
-	}
 	if ackcompare.HasNilDifference(a.ko.Spec.KeyStorePassword, b.ko.Spec.KeyStorePassword) {
 		delta.Add("Spec.KeyStorePassword", a.ko.Spec.KeyStorePassword, b.ko.Spec.KeyStorePassword)
 	} else if a.ko.Spec.KeyStorePassword != nil && b.ko.Spec.KeyStorePassword != nil {
 		if *a.ko.Spec.KeyStorePassword != *b.ko.Spec.KeyStorePassword {
 			delta.Add("Spec.KeyStorePassword", a.ko.Spec.KeyStorePassword, b.ko.Spec.KeyStorePassword)
+		}
+	}
+	if ackcompare.HasNilDifference(a.ko.Spec.Name, b.ko.Spec.Name) {
+		delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
+	} else if a.ko.Spec.Name != nil && b.ko.Spec.Name != nil {
+		if *a.ko.Spec.Name != *b.ko.Spec.Name {
+			delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
 		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.TrustAnchorCertificate, b.ko.Spec.TrustAnchorCertificate) {
