@@ -1,0 +1,9 @@
+resources:
+  Alias:
+    fields:
+      TargetKeyId:
+        is_primary_key: true
+        is_required: true
+        from:
+          operation: CreateAlias
+          path: TargetKeyId

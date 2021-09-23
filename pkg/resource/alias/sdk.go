@@ -19,15 +19,17 @@ import (
 	"context"
 	"strings"
 
-	ackv1alpha1 "github.com/aws/aws-controllers-k8s/apis/core/v1alpha1"
-	ackcompare "github.com/aws/aws-controllers-k8s/pkg/compare"
-	ackerr "github.com/aws/aws-controllers-k8s/pkg/errors"
+	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
+	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
+	ackcondition "github.com/aws-controllers-k8s/runtime/pkg/condition"
+	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
+	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/kms"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	svcapitypes "github.com/aws/aws-controllers-k8s/services/kms/apis/v1alpha1"
+	svcapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
 )
 
 // Hack to avoid import errors during build...
@@ -39,25 +41,36 @@ var (
 	_ = &svcapitypes.Alias{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
+	_ = &ackcondition.NotManagedMessage
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
 func (rm *resourceManager) sdkFind(
 	ctx context.Context,
 	r *resource,
-) (*resource, error) {
+) (latest *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkFind")
+	defer exit(err)
+	// If any required fields in the input shape are missing, AWS resource is
+	// not created yet. Return NotFound here to indicate to callers that the
+	// resource isn't yet created.
+	if rm.requiredFieldsMissingFromReadManyInput(r) {
+		return nil, ackerr.NotFound
+	}
+
 	input, err := rm.newListRequestPayload(r)
 	if err != nil {
 		return nil, err
 	}
-
-	resp, respErr := rm.sdkapi.ListAliasesWithContext(ctx, input)
-	rm.metrics.RecordAPICall("READ_MANY", "ListAliases", respErr)
-	if respErr != nil {
-		if awsErr, ok := ackerr.AWSError(respErr); ok && awsErr.Code() == "UNKNOWN" {
+	var resp *svcsdk.ListAliasesOutput
+	resp, err = rm.sdkapi.ListAliasesWithContext(ctx, input)
+	rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
+	if err != nil {
+		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
-		return nil, respErr
+		return nil, err
 	}
 
 	// Merge in the information we read from the API call above to the copy of
@@ -75,9 +88,13 @@ func (rm *resourceManager) sdkFind(
 		}
 		if elem.AliasName != nil {
 			ko.Spec.AliasName = elem.AliasName
+		} else {
+			ko.Spec.AliasName = nil
 		}
 		if elem.TargetKeyId != nil {
 			ko.Spec.TargetKeyID = elem.TargetKeyId
+		} else {
+			ko.Spec.TargetKeyID = nil
 		}
 		found = true
 		break
@@ -87,8 +104,16 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
-
 	return &resource{ko}, nil
+}
+
+// requiredFieldsMissingFromReadManyInput returns true if there are any fields
+// for the ReadMany Input shape that are required but not present in the
+// resource's Spec or Status
+func (rm *resourceManager) requiredFieldsMissingFromReadManyInput(
+	r *resource,
+) bool {
+	return false
 }
 
 // newListRequestPayload returns SDK-specific struct for the HTTP request
@@ -102,33 +127,39 @@ func (rm *resourceManager) newListRequestPayload(
 }
 
 // sdkCreate creates the supplied resource in the backend AWS service API and
-// returns a new resource with any fields in the Status field filled in
+// returns a copy of the resource with resource fields (in both Spec and
+// Status) filled in with values from the CREATE API operation's Output shape.
 func (rm *resourceManager) sdkCreate(
 	ctx context.Context,
-	r *resource,
-) (*resource, error) {
-	input, err := rm.newCreateRequestPayload(r)
+	desired *resource,
+) (created *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkCreate")
+	defer exit(err)
+	input, err := rm.newCreateRequestPayload(ctx, desired)
 	if err != nil {
 		return nil, err
 	}
 
-	_, respErr := rm.sdkapi.CreateAliasWithContext(ctx, input)
-	rm.metrics.RecordAPICall("CREATE", "CreateAlias", respErr)
-	if respErr != nil {
-		return nil, respErr
+	var resp *svcsdk.CreateAliasOutput
+	_ = resp
+	resp, err = rm.sdkapi.CreateAliasWithContext(ctx, input)
+	rm.metrics.RecordAPICall("CREATE", "CreateAlias", err)
+	if err != nil {
+		return nil, err
 	}
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
-	ko := r.ko.DeepCopy()
+	ko := desired.ko.DeepCopy()
 
 	rm.setStatusDefaults(ko)
-
 	return &resource{ko}, nil
 }
 
 // newCreateRequestPayload returns an SDK-specific struct for the HTTP request
 // payload of the Create API call for the resource
 func (rm *resourceManager) newCreateRequestPayload(
+	ctx context.Context,
 	r *resource,
 ) (*svcsdk.CreateAliasInput, error) {
 	res := &svcsdk.CreateAliasInput{}
@@ -149,31 +180,35 @@ func (rm *resourceManager) sdkUpdate(
 	ctx context.Context,
 	desired *resource,
 	latest *resource,
-	diffReporter *ackcompare.Reporter,
-) (*resource, error) {
-
-	input, err := rm.newUpdateRequestPayload(desired)
+	delta *ackcompare.Delta,
+) (updated *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkUpdate")
+	defer exit(err)
+	input, err := rm.newUpdateRequestPayload(ctx, desired)
 	if err != nil {
 		return nil, err
 	}
 
-	_, respErr := rm.sdkapi.UpdateAliasWithContext(ctx, input)
-	rm.metrics.RecordAPICall("UPDATE", "UpdateAlias", respErr)
-	if respErr != nil {
-		return nil, respErr
+	var resp *svcsdk.UpdateAliasOutput
+	_ = resp
+	resp, err = rm.sdkapi.UpdateAliasWithContext(ctx, input)
+	rm.metrics.RecordAPICall("UPDATE", "UpdateAlias", err)
+	if err != nil {
+		return nil, err
 	}
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
 	ko := desired.ko.DeepCopy()
 
 	rm.setStatusDefaults(ko)
-
 	return &resource{ko}, nil
 }
 
 // newUpdateRequestPayload returns an SDK-specific struct for the HTTP request
 // payload of the Update API call for the resource
 func (rm *resourceManager) newUpdateRequestPayload(
+	ctx context.Context,
 	r *resource,
 ) (*svcsdk.UpdateAliasInput, error) {
 	res := &svcsdk.UpdateAliasInput{}
@@ -192,14 +227,19 @@ func (rm *resourceManager) newUpdateRequestPayload(
 func (rm *resourceManager) sdkDelete(
 	ctx context.Context,
 	r *resource,
-) error {
+) (latest *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkDelete")
+	defer exit(err)
 	input, err := rm.newDeleteRequestPayload(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, respErr := rm.sdkapi.DeleteAliasWithContext(ctx, input)
-	rm.metrics.RecordAPICall("DELETE", "DeleteAlias", respErr)
-	return respErr
+	var resp *svcsdk.DeleteAliasOutput
+	_ = resp
+	resp, err = rm.sdkapi.DeleteAliasWithContext(ctx, input)
+	rm.metrics.RecordAPICall("DELETE", "DeleteAlias", err)
+	return nil, err
 }
 
 // newDeleteRequestPayload returns an SDK-specific struct for the HTTP request
@@ -235,6 +275,7 @@ func (rm *resourceManager) setStatusDefaults(
 // else it returns nil, false
 func (rm *resourceManager) updateConditions(
 	r *resource,
+	onSuccess bool,
 	err error,
 ) (*resource, bool) {
 	ko := r.ko.DeepCopy()
@@ -242,29 +283,66 @@ func (rm *resourceManager) updateConditions(
 
 	// Terminal condition
 	var terminalCondition *ackv1alpha1.Condition = nil
+	var recoverableCondition *ackv1alpha1.Condition = nil
+	var syncCondition *ackv1alpha1.Condition = nil
 	for _, condition := range ko.Status.Conditions {
 		if condition.Type == ackv1alpha1.ConditionTypeTerminal {
 			terminalCondition = condition
-			break
+		}
+		if condition.Type == ackv1alpha1.ConditionTypeRecoverable {
+			recoverableCondition = condition
+		}
+		if condition.Type == ackv1alpha1.ConditionTypeResourceSynced {
+			syncCondition = condition
 		}
 	}
 
-	if rm.terminalAWSError(err) {
+	if rm.terminalAWSError(err) || err == ackerr.SecretTypeNotSupported || err == ackerr.SecretNotFound {
 		if terminalCondition == nil {
 			terminalCondition = &ackv1alpha1.Condition{
 				Type: ackv1alpha1.ConditionTypeTerminal,
 			}
 			ko.Status.Conditions = append(ko.Status.Conditions, terminalCondition)
 		}
+		var errorMessage = ""
+		if err == ackerr.SecretTypeNotSupported || err == ackerr.SecretNotFound {
+			errorMessage = err.Error()
+		} else {
+			awsErr, _ := ackerr.AWSError(err)
+			errorMessage = awsErr.Error()
+		}
 		terminalCondition.Status = corev1.ConditionTrue
-		awsErr, _ := ackerr.AWSError(err)
-		errorMessage := awsErr.Message()
 		terminalCondition.Message = &errorMessage
-	} else if terminalCondition != nil {
-		terminalCondition.Status = corev1.ConditionFalse
-		terminalCondition.Message = nil
+	} else {
+		// Clear the terminal condition if no longer present
+		if terminalCondition != nil {
+			terminalCondition.Status = corev1.ConditionFalse
+			terminalCondition.Message = nil
+		}
+		// Handling Recoverable Conditions
+		if err != nil {
+			if recoverableCondition == nil {
+				// Add a new Condition containing a non-terminal error
+				recoverableCondition = &ackv1alpha1.Condition{
+					Type: ackv1alpha1.ConditionTypeRecoverable,
+				}
+				ko.Status.Conditions = append(ko.Status.Conditions, recoverableCondition)
+			}
+			recoverableCondition.Status = corev1.ConditionTrue
+			awsErr, _ := ackerr.AWSError(err)
+			errorMessage := err.Error()
+			if awsErr != nil {
+				errorMessage = awsErr.Error()
+			}
+			recoverableCondition.Message = &errorMessage
+		} else if recoverableCondition != nil {
+			recoverableCondition.Status = corev1.ConditionFalse
+			recoverableCondition.Message = nil
+		}
 	}
-	if terminalCondition != nil {
+	// Required to avoid the "declared but not used" error in the default case
+	_ = syncCondition
+	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}
 	return nil, false // not updated
