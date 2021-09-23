@@ -16,15 +16,29 @@
 package v1alpha1
 
 import (
+	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
+	"github.com/aws/aws-sdk-go/aws"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Hack to avoid import errors during build...
+var (
+	_ = &metav1.Time{}
+	_ = &aws.JSONValue{}
+	_ = ackv1alpha1.AWSAccountID("")
+)
+
+// Contains information about an alias.
 type AliasListEntry struct {
-	AliasARN    *string `json:"aliasARN,omitempty"`
-	AliasName   *string `json:"aliasName,omitempty"`
-	TargetKeyID *string `json:"targetKeyID,omitempty"`
+	AliasARN        *string      `json:"aliasARN,omitempty"`
+	AliasName       *string      `json:"aliasName,omitempty"`
+	CreationDate    *metav1.Time `json:"creationDate,omitempty"`
+	LastUpdatedDate *metav1.Time `json:"lastUpdatedDate,omitempty"`
+	TargetKeyID     *string      `json:"targetKeyID,omitempty"`
 }
 
+// Contains information about each custom key store in the custom key store
+// list.
 type CustomKeyStoresListEntry struct {
 	CloudHsmClusterID      *string      `json:"cloudHsmClusterID,omitempty"`
 	ConnectionErrorCode    *string      `json:"connectionErrorCode,omitempty"`
@@ -35,12 +49,59 @@ type CustomKeyStoresListEntry struct {
 	TrustAnchorCertificate *string      `json:"trustAnchorCertificate,omitempty"`
 }
 
+// Use this structure to allow cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
+// in the grant only when the operation request includes the specified encryption
+// context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context).
+//
+// AWS KMS applies the grant constraints only to cryptographic operations that
+// support an encryption context, that is, all cryptographic operations with
+// a symmetric CMK (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+// Grant constraints are not applied to operations that do not support an encryption
+// context, such as cryptographic operations with asymmetric CMKs and management
+// operations, such as DescribeKey or RetireGrant.
+//
+// In a cryptographic operation, the encryption context in the decryption operation
+// must be an exact, case-sensitive match for the keys and values in the encryption
+// context of the encryption operation. Only the order of the pairs can vary.
+//
+// However, in a grant constraint, the key in each key-value pair is not case
+// sensitive, but the value is case sensitive.
+//
+// To avoid confusion, do not use multiple encryption context pairs that differ
+// only by case. To require a fully case-sensitive encryption context, use the
+// kms:EncryptionContext: and kms:EncryptionContextKeys conditions in an IAM
+// or key policy. For details, see kms:EncryptionContext: (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-context)
+// in the AWS Key Management Service Developer Guide .
 type GrantConstraints struct {
 	EncryptionContextEquals map[string]*string `json:"encryptionContextEquals,omitempty"`
 	EncryptionContextSubset map[string]*string `json:"encryptionContextSubset,omitempty"`
 }
 
+// Contains information about a grant.
 type GrantListEntry struct {
+	// Use this structure to allow cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
+	// in the grant only when the operation request includes the specified encryption
+	// context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context).
+	//
+	// AWS KMS applies the grant constraints only to cryptographic operations that
+	// support an encryption context, that is, all cryptographic operations with
+	// a symmetric CMK (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+	// Grant constraints are not applied to operations that do not support an encryption
+	// context, such as cryptographic operations with asymmetric CMKs and management
+	// operations, such as DescribeKey or RetireGrant.
+	//
+	// In a cryptographic operation, the encryption context in the decryption operation
+	// must be an exact, case-sensitive match for the keys and values in the encryption
+	// context of the encryption operation. Only the order of the pairs can vary.
+	//
+	// However, in a grant constraint, the key in each key-value pair is not case
+	// sensitive, but the value is case sensitive.
+	//
+	// To avoid confusion, do not use multiple encryption context pairs that differ
+	// only by case. To require a fully case-sensitive encryption context, use the
+	// kms:EncryptionContext: and kms:EncryptionContextKeys conditions in an IAM
+	// or key policy. For details, see kms:EncryptionContext: (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-context)
+	// in the AWS Key Management Service Developer Guide .
 	Constraints       *GrantConstraints `json:"constraints,omitempty"`
 	CreationDate      *metav1.Time      `json:"creationDate,omitempty"`
 	GrantID           *string           `json:"grantID,omitempty"`
@@ -52,11 +113,16 @@ type GrantListEntry struct {
 	RetiringPrincipal *string           `json:"retiringPrincipal,omitempty"`
 }
 
+// Contains information about each entry in the key list.
 type KeyListEntry struct {
 	KeyARN *string `json:"keyARN,omitempty"`
 	KeyID  *string `json:"keyID,omitempty"`
 }
 
+// Contains metadata about a customer master key (CMK).
+//
+// This data type is used as a response element for the CreateKey and DescribeKey
+// operations.
 type KeyMetadata struct {
 	AWSAccountID          *string      `json:"awsAccountID,omitempty"`
 	ARN                   *string      `json:"arn,omitempty"`
@@ -78,6 +144,12 @@ type KeyMetadata struct {
 	ValidTo               *metav1.Time `json:"validTo,omitempty"`
 }
 
+// A key-value pair. A tag consists of a tag key and a tag value. Tag keys and
+// tag values are both required, but tag values can be empty (null) strings.
+//
+// For information about the rules that apply to tag keys and tag values, see
+// User-Defined Tag Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
+// in the AWS Billing and Cost Management User Guide.
 type Tag struct {
 	TagKey   *string `json:"tagKey,omitempty"`
 	TagValue *string `json:"tagValue,omitempty"`

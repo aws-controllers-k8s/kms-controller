@@ -19,15 +19,17 @@ import (
 	"context"
 	"strings"
 
-	ackv1alpha1 "github.com/aws/aws-controllers-k8s/apis/core/v1alpha1"
-	ackcompare "github.com/aws/aws-controllers-k8s/pkg/compare"
-	ackerr "github.com/aws/aws-controllers-k8s/pkg/errors"
+	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
+	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
+	ackcondition "github.com/aws-controllers-k8s/runtime/pkg/condition"
+	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
+	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/kms"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	svcapitypes "github.com/aws/aws-controllers-k8s/services/kms/apis/v1alpha1"
+	svcapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
 )
 
 // Hack to avoid import errors during build...
@@ -39,13 +41,17 @@ var (
 	_ = &svcapitypes.Key{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
+	_ = &ackcondition.NotManagedMessage
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
 func (rm *resourceManager) sdkFind(
 	ctx context.Context,
 	r *resource,
-) (*resource, error) {
+) (latest *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkFind")
+	defer exit(err)
 	// If any required fields in the input shape are missing, AWS resource is
 	// not created yet. Return NotFound here to indicate to callers that the
 	// resource isn't yet created.
@@ -58,13 +64,14 @@ func (rm *resourceManager) sdkFind(
 		return nil, err
 	}
 
-	resp, respErr := rm.sdkapi.DescribeKeyWithContext(ctx, input)
-	rm.metrics.RecordAPICall("READ_ONE", "DescribeKey", respErr)
-	if respErr != nil {
-		if awsErr, ok := ackerr.AWSError(respErr); ok && awsErr.Code() == "UNKNOWN" {
+	var resp *svcsdk.DescribeKeyOutput
+	resp, err = rm.sdkapi.DescribeKeyWithContext(ctx, input)
+	rm.metrics.RecordAPICall("READ_ONE", "DescribeKey", err)
+	if err != nil {
+		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
-		return nil, respErr
+		return nil, err
 	}
 
 	// Merge in the information we read from the API call above to the copy of
@@ -73,6 +80,8 @@ func (rm *resourceManager) sdkFind(
 
 	if resp.KeyMetadata.AWSAccountId != nil {
 		ko.Status.AWSAccountID = resp.KeyMetadata.AWSAccountId
+	} else {
+		ko.Status.AWSAccountID = nil
 	}
 	if ko.Status.ACKResourceMetadata == nil {
 		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
@@ -83,24 +92,38 @@ func (rm *resourceManager) sdkFind(
 	}
 	if resp.KeyMetadata.CloudHsmClusterId != nil {
 		ko.Status.CloudHsmClusterID = resp.KeyMetadata.CloudHsmClusterId
+	} else {
+		ko.Status.CloudHsmClusterID = nil
 	}
 	if resp.KeyMetadata.CreationDate != nil {
 		ko.Status.CreationDate = &metav1.Time{*resp.KeyMetadata.CreationDate}
+	} else {
+		ko.Status.CreationDate = nil
 	}
 	if resp.KeyMetadata.CustomKeyStoreId != nil {
 		ko.Spec.CustomKeyStoreID = resp.KeyMetadata.CustomKeyStoreId
+	} else {
+		ko.Spec.CustomKeyStoreID = nil
 	}
 	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
 		ko.Spec.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
+	} else {
+		ko.Spec.CustomerMasterKeySpec = nil
 	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		ko.Status.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
+	} else {
+		ko.Status.DeletionDate = nil
 	}
 	if resp.KeyMetadata.Description != nil {
 		ko.Spec.Description = resp.KeyMetadata.Description
+	} else {
+		ko.Spec.Description = nil
 	}
 	if resp.KeyMetadata.Enabled != nil {
 		ko.Status.Enabled = resp.KeyMetadata.Enabled
+	} else {
+		ko.Status.Enabled = nil
 	}
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
 		f9 := []*string{}
@@ -110,24 +133,38 @@ func (rm *resourceManager) sdkFind(
 			f9 = append(f9, &f9elem)
 		}
 		ko.Status.EncryptionAlgorithms = f9
+	} else {
+		ko.Status.EncryptionAlgorithms = nil
 	}
 	if resp.KeyMetadata.ExpirationModel != nil {
 		ko.Status.ExpirationModel = resp.KeyMetadata.ExpirationModel
+	} else {
+		ko.Status.ExpirationModel = nil
 	}
 	if resp.KeyMetadata.KeyId != nil {
 		ko.Status.KeyID = resp.KeyMetadata.KeyId
+	} else {
+		ko.Status.KeyID = nil
 	}
 	if resp.KeyMetadata.KeyManager != nil {
 		ko.Status.KeyManager = resp.KeyMetadata.KeyManager
+	} else {
+		ko.Status.KeyManager = nil
 	}
 	if resp.KeyMetadata.KeyState != nil {
 		ko.Status.KeyState = resp.KeyMetadata.KeyState
+	} else {
+		ko.Status.KeyState = nil
 	}
 	if resp.KeyMetadata.KeyUsage != nil {
 		ko.Spec.KeyUsage = resp.KeyMetadata.KeyUsage
+	} else {
+		ko.Spec.KeyUsage = nil
 	}
 	if resp.KeyMetadata.Origin != nil {
 		ko.Spec.Origin = resp.KeyMetadata.Origin
+	} else {
+		ko.Spec.Origin = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
 		f16 := []*string{}
@@ -137,9 +174,13 @@ func (rm *resourceManager) sdkFind(
 			f16 = append(f16, &f16elem)
 		}
 		ko.Status.SigningAlgorithms = f16
+	} else {
+		ko.Status.SigningAlgorithms = nil
 	}
 	if resp.KeyMetadata.ValidTo != nil {
 		ko.Status.ValidTo = &metav1.Time{*resp.KeyMetadata.ValidTo}
+	} else {
+		ko.Status.ValidTo = nil
 	}
 
 	rm.setStatusDefaults(ko)
@@ -147,7 +188,7 @@ func (rm *resourceManager) sdkFind(
 }
 
 // requiredFieldsMissingFromReadOneInput returns true if there are any fields
-// for the ReadOne Input shape that are required by not present in the
+// for the ReadOne Input shape that are required but not present in the
 // resource's Spec or Status
 func (rm *resourceManager) requiredFieldsMissingFromReadOneInput(
 	r *resource,
@@ -171,27 +212,35 @@ func (rm *resourceManager) newDescribeRequestPayload(
 }
 
 // sdkCreate creates the supplied resource in the backend AWS service API and
-// returns a new resource with any fields in the Status field filled in
+// returns a copy of the resource with resource fields (in both Spec and
+// Status) filled in with values from the CREATE API operation's Output shape.
 func (rm *resourceManager) sdkCreate(
 	ctx context.Context,
-	r *resource,
-) (*resource, error) {
-	input, err := rm.newCreateRequestPayload(r)
+	desired *resource,
+) (created *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkCreate")
+	defer exit(err)
+	input, err := rm.newCreateRequestPayload(ctx, desired)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, respErr := rm.sdkapi.CreateKeyWithContext(ctx, input)
-	rm.metrics.RecordAPICall("CREATE", "CreateKey", respErr)
-	if respErr != nil {
-		return nil, respErr
+	var resp *svcsdk.CreateKeyOutput
+	_ = resp
+	resp, err = rm.sdkapi.CreateKeyWithContext(ctx, input)
+	rm.metrics.RecordAPICall("CREATE", "CreateKey", err)
+	if err != nil {
+		return nil, err
 	}
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
-	ko := r.ko.DeepCopy()
+	ko := desired.ko.DeepCopy()
 
 	if resp.KeyMetadata.AWSAccountId != nil {
 		ko.Status.AWSAccountID = resp.KeyMetadata.AWSAccountId
+	} else {
+		ko.Status.AWSAccountID = nil
 	}
 	if ko.Status.ACKResourceMetadata == nil {
 		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
@@ -202,15 +251,38 @@ func (rm *resourceManager) sdkCreate(
 	}
 	if resp.KeyMetadata.CloudHsmClusterId != nil {
 		ko.Status.CloudHsmClusterID = resp.KeyMetadata.CloudHsmClusterId
+	} else {
+		ko.Status.CloudHsmClusterID = nil
 	}
 	if resp.KeyMetadata.CreationDate != nil {
 		ko.Status.CreationDate = &metav1.Time{*resp.KeyMetadata.CreationDate}
+	} else {
+		ko.Status.CreationDate = nil
+	}
+	if resp.KeyMetadata.CustomKeyStoreId != nil {
+		ko.Spec.CustomKeyStoreID = resp.KeyMetadata.CustomKeyStoreId
+	} else {
+		ko.Spec.CustomKeyStoreID = nil
+	}
+	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
+		ko.Spec.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
+	} else {
+		ko.Spec.CustomerMasterKeySpec = nil
 	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		ko.Status.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
+	} else {
+		ko.Status.DeletionDate = nil
+	}
+	if resp.KeyMetadata.Description != nil {
+		ko.Spec.Description = resp.KeyMetadata.Description
+	} else {
+		ko.Spec.Description = nil
 	}
 	if resp.KeyMetadata.Enabled != nil {
 		ko.Status.Enabled = resp.KeyMetadata.Enabled
+	} else {
+		ko.Status.Enabled = nil
 	}
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
 		f9 := []*string{}
@@ -220,18 +292,38 @@ func (rm *resourceManager) sdkCreate(
 			f9 = append(f9, &f9elem)
 		}
 		ko.Status.EncryptionAlgorithms = f9
+	} else {
+		ko.Status.EncryptionAlgorithms = nil
 	}
 	if resp.KeyMetadata.ExpirationModel != nil {
 		ko.Status.ExpirationModel = resp.KeyMetadata.ExpirationModel
+	} else {
+		ko.Status.ExpirationModel = nil
 	}
 	if resp.KeyMetadata.KeyId != nil {
 		ko.Status.KeyID = resp.KeyMetadata.KeyId
+	} else {
+		ko.Status.KeyID = nil
 	}
 	if resp.KeyMetadata.KeyManager != nil {
 		ko.Status.KeyManager = resp.KeyMetadata.KeyManager
+	} else {
+		ko.Status.KeyManager = nil
 	}
 	if resp.KeyMetadata.KeyState != nil {
 		ko.Status.KeyState = resp.KeyMetadata.KeyState
+	} else {
+		ko.Status.KeyState = nil
+	}
+	if resp.KeyMetadata.KeyUsage != nil {
+		ko.Spec.KeyUsage = resp.KeyMetadata.KeyUsage
+	} else {
+		ko.Spec.KeyUsage = nil
+	}
+	if resp.KeyMetadata.Origin != nil {
+		ko.Spec.Origin = resp.KeyMetadata.Origin
+	} else {
+		ko.Spec.Origin = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
 		f16 := []*string{}
@@ -241,19 +333,23 @@ func (rm *resourceManager) sdkCreate(
 			f16 = append(f16, &f16elem)
 		}
 		ko.Status.SigningAlgorithms = f16
+	} else {
+		ko.Status.SigningAlgorithms = nil
 	}
 	if resp.KeyMetadata.ValidTo != nil {
 		ko.Status.ValidTo = &metav1.Time{*resp.KeyMetadata.ValidTo}
+	} else {
+		ko.Status.ValidTo = nil
 	}
 
 	rm.setStatusDefaults(ko)
-
 	return &resource{ko}, nil
 }
 
 // newCreateRequestPayload returns an SDK-specific struct for the HTTP request
 // payload of the Create API call for the resource
 func (rm *resourceManager) newCreateRequestPayload(
+	ctx context.Context,
 	r *resource,
 ) (*svcsdk.CreateKeyInput, error) {
 	res := &svcsdk.CreateKeyInput{}
@@ -303,7 +399,7 @@ func (rm *resourceManager) sdkUpdate(
 	ctx context.Context,
 	desired *resource,
 	latest *resource,
-	diffReporter *ackcompare.Reporter,
+	delta *ackcompare.Delta,
 ) (*resource, error) {
 	// TODO(jaypipes): Figure this out...
 	return nil, ackerr.NotImplemented
@@ -313,9 +409,12 @@ func (rm *resourceManager) sdkUpdate(
 func (rm *resourceManager) sdkDelete(
 	ctx context.Context,
 	r *resource,
-) error {
+) (latest *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkDelete")
+	defer exit(err)
 	// TODO(jaypipes): Figure this out...
-	return nil
+	return nil, nil
 
 }
 
@@ -338,6 +437,7 @@ func (rm *resourceManager) setStatusDefaults(
 // else it returns nil, false
 func (rm *resourceManager) updateConditions(
 	r *resource,
+	onSuccess bool,
 	err error,
 ) (*resource, bool) {
 	ko := r.ko.DeepCopy()
@@ -345,29 +445,66 @@ func (rm *resourceManager) updateConditions(
 
 	// Terminal condition
 	var terminalCondition *ackv1alpha1.Condition = nil
+	var recoverableCondition *ackv1alpha1.Condition = nil
+	var syncCondition *ackv1alpha1.Condition = nil
 	for _, condition := range ko.Status.Conditions {
 		if condition.Type == ackv1alpha1.ConditionTypeTerminal {
 			terminalCondition = condition
-			break
+		}
+		if condition.Type == ackv1alpha1.ConditionTypeRecoverable {
+			recoverableCondition = condition
+		}
+		if condition.Type == ackv1alpha1.ConditionTypeResourceSynced {
+			syncCondition = condition
 		}
 	}
 
-	if rm.terminalAWSError(err) {
+	if rm.terminalAWSError(err) || err == ackerr.SecretTypeNotSupported || err == ackerr.SecretNotFound {
 		if terminalCondition == nil {
 			terminalCondition = &ackv1alpha1.Condition{
 				Type: ackv1alpha1.ConditionTypeTerminal,
 			}
 			ko.Status.Conditions = append(ko.Status.Conditions, terminalCondition)
 		}
+		var errorMessage = ""
+		if err == ackerr.SecretTypeNotSupported || err == ackerr.SecretNotFound {
+			errorMessage = err.Error()
+		} else {
+			awsErr, _ := ackerr.AWSError(err)
+			errorMessage = awsErr.Error()
+		}
 		terminalCondition.Status = corev1.ConditionTrue
-		awsErr, _ := ackerr.AWSError(err)
-		errorMessage := awsErr.Message()
 		terminalCondition.Message = &errorMessage
-	} else if terminalCondition != nil {
-		terminalCondition.Status = corev1.ConditionFalse
-		terminalCondition.Message = nil
+	} else {
+		// Clear the terminal condition if no longer present
+		if terminalCondition != nil {
+			terminalCondition.Status = corev1.ConditionFalse
+			terminalCondition.Message = nil
+		}
+		// Handling Recoverable Conditions
+		if err != nil {
+			if recoverableCondition == nil {
+				// Add a new Condition containing a non-terminal error
+				recoverableCondition = &ackv1alpha1.Condition{
+					Type: ackv1alpha1.ConditionTypeRecoverable,
+				}
+				ko.Status.Conditions = append(ko.Status.Conditions, recoverableCondition)
+			}
+			recoverableCondition.Status = corev1.ConditionTrue
+			awsErr, _ := ackerr.AWSError(err)
+			errorMessage := err.Error()
+			if awsErr != nil {
+				errorMessage = awsErr.Error()
+			}
+			recoverableCondition.Message = &errorMessage
+		} else if recoverableCondition != nil {
+			recoverableCondition.Status = corev1.ConditionFalse
+			recoverableCondition.Message = nil
+		}
 	}
-	if terminalCondition != nil {
+	// Required to avoid the "declared but not used" error in the default case
+	_ = syncCondition
+	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}
 	return nil, false // not updated
