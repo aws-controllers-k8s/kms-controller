@@ -404,7 +404,7 @@ func (rm *resourceManager) sdkDelete(
 	if err != nil {
 		return nil, err
 	}
-	input.SetPendingWindowInDays(GetDeletePendingWindowInDays(r))
+	input.SetPendingWindowInDays(GetDeletePendingWindowInDays(&r.ko.ObjectMeta))
 	var resp *svcsdk.ScheduleKeyDeletionOutput
 	_ = resp
 	resp, err = rm.sdkapi.ScheduleKeyDeletionWithContext(ctx, input)

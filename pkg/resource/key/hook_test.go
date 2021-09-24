@@ -13,8 +13,33 @@
 
 package key_test
 
-import "testing"
+import (
+	"testing"
 
-func Test_GetHeadersFromGrants(t *testing.T) {
+	svcapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
+	key "github.com/aws-controllers-k8s/kms-controller/pkg/resource/key"
+	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
+func Test_GetDeletePendingWindowInDays(t *testing.T) {
+	assert := assert.New(t)
+
+	noAnnotation := metav1.ObjectMeta{
+		Annotations: map[string]string{},
+	}
+	badAnnotation := metav1.ObjectMeta{
+		Annotations: map[string]string{
+			svcapitypes.AnnotationDeletePendingWindow: "not-an-int",
+		},
+	}
+	validAnnotation := metav1.ObjectMeta{
+		Annotations: map[string]string{
+			svcapitypes.AnnotationDeletePendingWindow: "25",
+		},
+	}
+
+	assert.Equal(key.GetDeletePendingWindowInDays(&noAnnotation), key.DefaultDeletePendingWindowInDays)
+	assert.Equal(key.GetDeletePendingWindowInDays(&badAnnotation), key.DefaultDeletePendingWindowInDays)
+	assert.Equal(key.GetDeletePendingWindowInDays(&validAnnotation), int64(25))
 }

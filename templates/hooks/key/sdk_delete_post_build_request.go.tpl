@@ -1,1 +1,1 @@
-input.SetPendingWindowInDays(GetDeletePendingWindowInDays(r))
+input.SetPendingWindowInDays(GetDeletePendingWindowInDays(&r.ko.ObjectMeta))

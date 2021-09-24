@@ -17,18 +17,19 @@ import (
 	"strconv"
 
 	svcapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	DefaultDeletePendingWindowInDays = 7
+	DefaultDeletePendingWindowInDays = int64(7)
 )
 
 // GetDeletePendingWindowInDays returns the pending window (in days) as
 // determined by the annotation on the object, or the default value otherwise.
 func GetDeletePendingWindowInDays(
-	r *resource,
+	m *metav1.ObjectMeta,
 ) int64 {
-	resAnnotations := r.MetaObject().GetAnnotations()
+	resAnnotations := m.GetAnnotations()
 	pendingWindow, ok := resAnnotations[svcapitypes.AnnotationDeletePendingWindow]
 	if !ok {
 		return DefaultDeletePendingWindowInDays
