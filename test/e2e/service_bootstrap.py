@@ -17,15 +17,13 @@ import logging
 from acktest.bootstrapping import Resources, BootstrapFailureException
 from e2e import bootstrap_directory
 from e2e.bootstrap_resources import (
-    TestBootstrapResources,
+    BootstrapResources,
 )
 
 def service_bootstrap() -> Resources:
     logging.getLogger().setLevel(logging.INFO)
     
-    resources = TestBootstrapResources(
-        
-    )
+    resources = BootstrapResources()
 
     try:
         resources.bootstrap()

@@ -1,7 +1,0 @@
-apiVersion: kms.services.k8s.aws/v1alpha1
-kind: Alias
-metadata:
-  name: test-alias
-spec:
-  name: ack-test-key
-  targetKeyID: "012188ab-06ec-432c-81c2-22c7505e587a"
