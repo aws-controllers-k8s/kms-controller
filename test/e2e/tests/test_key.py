@@ -14,13 +14,10 @@
 """Integration tests for the KMS Key resource
 """
 
-import boto3
 import logging
-import time
 import pytest
 
 from datetime import datetime, timedelta
-from typing import Dict
 
 from acktest.k8s import resource as k8s
 from acktest.resources import random_suffix_name
