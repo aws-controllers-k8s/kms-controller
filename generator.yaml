@@ -52,6 +52,10 @@ resources:
           if input.CustomKeyStoreId != nil && input.CustomKeyStoreName != nil {
             input.CustomKeyStoreName = nil
           }
+  Key:
+    hooks:
+      sdk_delete_post_build_request:
+        code: input.SetPendingWindowInDays(rm.getDeletePendingWindowInDays(r))
 operations:
   ScheduleKeyDeletion:
     operation_type:
