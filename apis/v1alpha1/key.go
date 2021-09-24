@@ -163,9 +163,6 @@ type KeyStatus struct {
 	// The date and time when the CMK was created.
 	// +kubebuilder:validation:Optional
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
-	// Describes the type of key material in the CMK.
-	// +kubebuilder:validation:Optional
-	CustomerMasterKeySpec *string `json:"customerMasterKeySpec,omitempty"`
 	// The date and time after which AWS KMS deletes the CMK. This value is present
 	// only when KeyState is PendingDeletion.
 	// +kubebuilder:validation:Optional

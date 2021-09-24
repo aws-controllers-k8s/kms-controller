@@ -124,24 +124,23 @@ type KeyListEntry struct {
 // This data type is used as a response element for the CreateKey and DescribeKey
 // operations.
 type KeyMetadata struct {
-	AWSAccountID          *string      `json:"awsAccountID,omitempty"`
-	ARN                   *string      `json:"arn,omitempty"`
-	CloudHsmClusterID     *string      `json:"cloudHsmClusterID,omitempty"`
-	CreationDate          *metav1.Time `json:"creationDate,omitempty"`
-	CustomKeyStoreID      *string      `json:"customKeyStoreID,omitempty"`
-	CustomerMasterKeySpec *string      `json:"customerMasterKeySpec,omitempty"`
-	DeletionDate          *metav1.Time `json:"deletionDate,omitempty"`
-	Description           *string      `json:"description,omitempty"`
-	Enabled               *bool        `json:"enabled,omitempty"`
-	EncryptionAlgorithms  []*string    `json:"encryptionAlgorithms,omitempty"`
-	ExpirationModel       *string      `json:"expirationModel,omitempty"`
-	KeyID                 *string      `json:"keyID,omitempty"`
-	KeyManager            *string      `json:"keyManager,omitempty"`
-	KeyState              *string      `json:"keyState,omitempty"`
-	KeyUsage              *string      `json:"keyUsage,omitempty"`
-	Origin                *string      `json:"origin,omitempty"`
-	SigningAlgorithms     []*string    `json:"signingAlgorithms,omitempty"`
-	ValidTo               *metav1.Time `json:"validTo,omitempty"`
+	AWSAccountID         *string      `json:"awsAccountID,omitempty"`
+	ARN                  *string      `json:"arn,omitempty"`
+	CloudHsmClusterID    *string      `json:"cloudHsmClusterID,omitempty"`
+	CreationDate         *metav1.Time `json:"creationDate,omitempty"`
+	CustomKeyStoreID     *string      `json:"customKeyStoreID,omitempty"`
+	DeletionDate         *metav1.Time `json:"deletionDate,omitempty"`
+	Description          *string      `json:"description,omitempty"`
+	Enabled              *bool        `json:"enabled,omitempty"`
+	EncryptionAlgorithms []*string    `json:"encryptionAlgorithms,omitempty"`
+	ExpirationModel      *string      `json:"expirationModel,omitempty"`
+	KeyID                *string      `json:"keyID,omitempty"`
+	KeyManager           *string      `json:"keyManager,omitempty"`
+	KeyState             *string      `json:"keyState,omitempty"`
+	KeyUsage             *string      `json:"keyUsage,omitempty"`
+	Origin               *string      `json:"origin,omitempty"`
+	SigningAlgorithms    []*string    `json:"signingAlgorithms,omitempty"`
+	ValidTo              *metav1.Time `json:"validTo,omitempty"`
 }
 
 // A key-value pair. A tag consists of a tag key and a tag value. Tag keys and

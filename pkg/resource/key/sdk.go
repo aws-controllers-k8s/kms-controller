@@ -105,11 +105,6 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Spec.CustomKeyStoreID = nil
 	}
-	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
-		ko.Status.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
-	} else {
-		ko.Status.CustomerMasterKeySpec = nil
-	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		ko.Status.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
 	} else {
@@ -126,13 +121,13 @@ func (rm *resourceManager) sdkFind(
 		ko.Status.Enabled = nil
 	}
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
-		f9 := []*string{}
-		for _, f9iter := range resp.KeyMetadata.EncryptionAlgorithms {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f8 := []*string{}
+		for _, f8iter := range resp.KeyMetadata.EncryptionAlgorithms {
+			var f8elem string
+			f8elem = *f8iter
+			f8 = append(f8, &f8elem)
 		}
-		ko.Status.EncryptionAlgorithms = f9
+		ko.Status.EncryptionAlgorithms = f8
 	} else {
 		ko.Status.EncryptionAlgorithms = nil
 	}
@@ -167,13 +162,13 @@ func (rm *resourceManager) sdkFind(
 		ko.Spec.Origin = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f16 := []*string{}
-		for _, f16iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f15 := []*string{}
+		for _, f15iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f15elem string
+			f15elem = *f15iter
+			f15 = append(f15, &f15elem)
 		}
-		ko.Status.SigningAlgorithms = f16
+		ko.Status.SigningAlgorithms = f15
 	} else {
 		ko.Status.SigningAlgorithms = nil
 	}
@@ -264,11 +259,6 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Spec.CustomKeyStoreID = nil
 	}
-	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
-		ko.Status.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
-	} else {
-		ko.Status.CustomerMasterKeySpec = nil
-	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		ko.Status.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
 	} else {
@@ -285,13 +275,13 @@ func (rm *resourceManager) sdkCreate(
 		ko.Status.Enabled = nil
 	}
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
-		f9 := []*string{}
-		for _, f9iter := range resp.KeyMetadata.EncryptionAlgorithms {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f8 := []*string{}
+		for _, f8iter := range resp.KeyMetadata.EncryptionAlgorithms {
+			var f8elem string
+			f8elem = *f8iter
+			f8 = append(f8, &f8elem)
 		}
-		ko.Status.EncryptionAlgorithms = f9
+		ko.Status.EncryptionAlgorithms = f8
 	} else {
 		ko.Status.EncryptionAlgorithms = nil
 	}
@@ -326,13 +316,13 @@ func (rm *resourceManager) sdkCreate(
 		ko.Spec.Origin = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f16 := []*string{}
-		for _, f16iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f15 := []*string{}
+		for _, f15iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f15elem string
+			f15elem = *f15iter
+			f15 = append(f15, &f15elem)
 		}
-		ko.Status.SigningAlgorithms = f16
+		ko.Status.SigningAlgorithms = f15
 	} else {
 		ko.Status.SigningAlgorithms = nil
 	}

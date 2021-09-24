@@ -222,9 +222,6 @@ spec:
                 description: The date and time when the CMK was created.
                 format: date-time
                 type: string
-              customerMasterKeySpec:
-                description: Describes the type of key material in the CMK.
-                type: string
               deletionDate:
                 description: The date and time after which AWS KMS deletes the CMK.
                   This value is present only when KeyState is PendingDeletion.

@@ -50,3 +50,4 @@ operations:
 ignore:
   field_paths:
     - CreateKeyInput.CustomerMasterKeySpec
+    - KeyMetadata.CustomerMasterKeySpec
