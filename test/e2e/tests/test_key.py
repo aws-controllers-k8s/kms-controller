@@ -140,7 +140,7 @@ class TestKey:
 
         key = kms_client.describe_key(KeyId=key_id)
         assert key['KeyMetadata']['KeyId'] == key_id
-        assert 'DeletionDate' not in key['KeyMetadata']
+        self._assert_key_alive(key)
 
         _, deleted = k8s.delete_custom_resource(ref, 3, 5)
         assert deleted

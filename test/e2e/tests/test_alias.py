@@ -71,7 +71,17 @@ def simple_alias(simple_key):
 @service_marker
 @pytest.mark.canary
 class TestAlias:
-    def test_create_delete_alias(self, simple_alias):
+    def test_create_delete_alias(self, kms_client, simple_alias):
         (ref, cr) = simple_alias
 
         assert 'arn' in cr['status']['ackResourceMetadata']
+        alias_arn = cr['status']['ackResourceMetadata']['arn']
+
+        _, deleted = k8s.delete_custom_resource(ref, 3, 5)
+        assert deleted
+
+        for alias in kms_client.list_aliases(KeyId=cr['spec']['targetKeyID'])['Aliases']:
+            if alias['AliasArn'] == alias_arn:
+                # The alias was not deleted correctly
+                pytest.fail("Alias was not deleted from KMS")
+        
