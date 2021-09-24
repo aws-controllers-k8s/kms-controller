@@ -1,0 +1,6 @@
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+  name: test-key
+spec:
+  description: "Key created by ACK tests"

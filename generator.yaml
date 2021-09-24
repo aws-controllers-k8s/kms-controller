@@ -15,6 +15,9 @@ resources:
         DeleteAlias:
           input_fields:
             AliasName: Name
+    exceptions:
+      terminal_codes:
+        - ValidationException
     hooks:
       sdk_read_many_post_build_request:
         code: |
