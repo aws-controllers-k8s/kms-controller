@@ -410,9 +410,29 @@ func (rm *resourceManager) sdkDelete(
 	rlog := ackrtlog.FromContext(ctx)
 	exit := rlog.Trace("rm.sdkDelete")
 	defer exit(err)
-	// TODO(jaypipes): Figure this out...
-	return nil, nil
+	input, err := rm.newDeleteRequestPayload(r)
+	if err != nil {
+		return nil, err
+	}
+	var resp *svcsdk.ScheduleKeyDeletionOutput
+	_ = resp
+	resp, err = rm.sdkapi.ScheduleKeyDeletionWithContext(ctx, input)
+	rm.metrics.RecordAPICall("DELETE", "ScheduleKeyDeletion", err)
+	return nil, err
+}
 
+// newDeleteRequestPayload returns an SDK-specific struct for the HTTP request
+// payload of the Delete API call for the resource
+func (rm *resourceManager) newDeleteRequestPayload(
+	r *resource,
+) (*svcsdk.ScheduleKeyDeletionInput, error) {
+	res := &svcsdk.ScheduleKeyDeletionInput{}
+
+	if r.ko.Status.KeyID != nil {
+		res.SetKeyId(*r.ko.Status.KeyID)
+	}
+
+	return res, nil
 }
 
 // setStatusDefaults sets default properties into supplied custom resource

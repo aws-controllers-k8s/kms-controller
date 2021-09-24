@@ -52,6 +52,11 @@ resources:
           if input.CustomKeyStoreId != nil && input.CustomKeyStoreName != nil {
             input.CustomKeyStoreName = nil
           }
+operations:
+  ScheduleKeyDeletion:
+    operation_type:
+      - Delete
+    resource_name: Key
 ignore:
   field_paths:
     - CreateKeyInput.CustomerMasterKeySpec
