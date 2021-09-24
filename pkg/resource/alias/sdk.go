@@ -65,7 +65,6 @@ func (rm *resourceManager) sdkFind(
 	}
 	// Match by associated Key ID
 	input.KeyId = r.ko.Spec.TargetKeyID
-
 	var resp *svcsdk.ListAliasesOutput
 	resp, err = rm.sdkapi.ListAliasesWithContext(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)

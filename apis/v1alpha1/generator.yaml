@@ -20,19 +20,9 @@ resources:
         - ValidationException
     hooks:
       sdk_read_many_post_build_request:
-        code: |
-          // Match by associated Key ID
-          input.KeyId = r.ko.Spec.TargetKeyID
+        template_path: hooks/alias/sdk_read_many_post_build_request.go.tpl
       sdk_read_many_pre_set_output:
-        code: |
-          // Filter resulting aliases, matching only the one with the name in the spec
-          matchingAliases := []*svcsdk.AliasListEntry{}
-          for _, elem := range resp.Aliases {
-            if *elem.AliasName == *r.ko.Spec.Name {
-              matchingAliases = append(matchingAliases, elem)
-            }
-          }
-          resp.Aliases = matchingAliases
+        template_path: hooks/alias/sdk_read_many_pre_set_output.go.tpl
   CustomKeyStore:
     renames:
       operations:
@@ -47,15 +37,11 @@ resources:
             CustomKeyStoreName: Name
     hooks:
       sdk_read_many_post_build_request:
-        code: |
-          // At most one of Store ID and Store Name are allowed
-          if input.CustomKeyStoreId != nil && input.CustomKeyStoreName != nil {
-            input.CustomKeyStoreName = nil
-          }
+        template_path: hooks/custom_key_store/sdk_read_many_post_build_request.go.tpl
   Key:
     hooks:
       sdk_delete_post_build_request:
-        code: input.SetPendingWindowInDays(rm.getDeletePendingWindowInDays(r))
+        template_path: hooks/key/sdk_delete_post_build_request.go.tpl
 operations:
   ScheduleKeyDeletion:
     operation_type:

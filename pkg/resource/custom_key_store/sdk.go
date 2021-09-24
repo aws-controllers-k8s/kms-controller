@@ -67,7 +67,6 @@ func (rm *resourceManager) sdkFind(
 	if input.CustomKeyStoreId != nil && input.CustomKeyStoreName != nil {
 		input.CustomKeyStoreName = nil
 	}
-
 	var resp *svcsdk.DescribeCustomKeyStoresOutput
 	resp, err = rm.sdkapi.DescribeCustomKeyStoresWithContext(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeCustomKeyStores", err)

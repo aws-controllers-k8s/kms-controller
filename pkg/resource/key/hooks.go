@@ -23,9 +23,9 @@ const (
 	DefaultDeletePendingWindowInDays = 7
 )
 
-// getDeletePendingWindowInDays returns the pending window (in days) as
+// GetDeletePendingWindowInDays returns the pending window (in days) as
 // determined by the annotation on the object, or the default value otherwise.
-func (rm *resourceManager) getDeletePendingWindowInDays(
+func GetDeletePendingWindowInDays(
 	r *resource,
 ) int64 {
 	resAnnotations := r.MetaObject().GetAnnotations()
