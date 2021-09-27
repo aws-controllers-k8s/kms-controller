@@ -63,6 +63,8 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
+	// Match by associated Key ID
+	input.KeyId = r.ko.Spec.TargetKeyID
 	var resp *svcsdk.ListAliasesOutput
 	resp, err = rm.sdkapi.ListAliasesWithContext(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
@@ -76,6 +78,18 @@ func (rm *resourceManager) sdkFind(
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
 	ko := r.ko.DeepCopy()
+	// Filter resulting aliases, matching only the one with the name in the spec
+	matchingAliases := []*svcsdk.AliasListEntry{}
+	for _, elem := range resp.Aliases {
+		if elem.AliasName == nil || r.ko.Spec.Name == nil {
+			continue
+		}
+
+		if *elem.AliasName == *r.ko.Spec.Name {
+			matchingAliases = append(matchingAliases, elem)
+		}
+	}
+	resp.Aliases = matchingAliases
 
 	found := false
 	for _, elem := range resp.Aliases {
@@ -85,11 +99,6 @@ func (rm *resourceManager) sdkFind(
 			}
 			tmpARN := ackv1alpha1.AWSResourceName(*elem.AliasArn)
 			ko.Status.ACKResourceMetadata.ARN = &tmpARN
-		}
-		if elem.AliasName != nil {
-			ko.Spec.AliasName = elem.AliasName
-		} else {
-			ko.Spec.AliasName = nil
 		}
 		if elem.TargetKeyId != nil {
 			ko.Spec.TargetKeyID = elem.TargetKeyId
@@ -164,8 +173,8 @@ func (rm *resourceManager) newCreateRequestPayload(
 ) (*svcsdk.CreateAliasInput, error) {
 	res := &svcsdk.CreateAliasInput{}
 
-	if r.ko.Spec.AliasName != nil {
-		res.SetAliasName(*r.ko.Spec.AliasName)
+	if r.ko.Spec.Name != nil {
+		res.SetAliasName(*r.ko.Spec.Name)
 	}
 	if r.ko.Spec.TargetKeyID != nil {
 		res.SetTargetKeyId(*r.ko.Spec.TargetKeyID)
@@ -213,9 +222,6 @@ func (rm *resourceManager) newUpdateRequestPayload(
 ) (*svcsdk.UpdateAliasInput, error) {
 	res := &svcsdk.UpdateAliasInput{}
 
-	if r.ko.Spec.AliasName != nil {
-		res.SetAliasName(*r.ko.Spec.AliasName)
-	}
 	if r.ko.Spec.TargetKeyID != nil {
 		res.SetTargetKeyId(*r.ko.Spec.TargetKeyID)
 	}
@@ -249,8 +255,8 @@ func (rm *resourceManager) newDeleteRequestPayload(
 ) (*svcsdk.DeleteAliasInput, error) {
 	res := &svcsdk.DeleteAliasInput{}
 
-	if r.ko.Spec.AliasName != nil {
-		res.SetAliasName(*r.ko.Spec.AliasName)
+	if r.ko.Spec.Name != nil {
+		res.SetAliasName(*r.ko.Spec.Name)
 	}
 
 	return res, nil
@@ -352,6 +358,17 @@ func (rm *resourceManager) updateConditions(
 // and if the exception indicates that it is a Terminal exception
 // 'Terminal' exception are specified in generator configuration
 func (rm *resourceManager) terminalAWSError(err error) bool {
-	// No terminal_errors specified for this resource in generator config
-	return false
+	if err == nil {
+		return false
+	}
+	awsErr, ok := ackerr.AWSError(err)
+	if !ok {
+		return false
+	}
+	switch awsErr.Code() {
+	case "ValidationException":
+		return true
+	default:
+		return false
+	}
 }

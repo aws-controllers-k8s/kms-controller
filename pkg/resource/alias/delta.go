@@ -41,11 +41,11 @@ func newResourceDelta(
 		return delta
 	}
 
-	if ackcompare.HasNilDifference(a.ko.Spec.AliasName, b.ko.Spec.AliasName) {
-		delta.Add("Spec.AliasName", a.ko.Spec.AliasName, b.ko.Spec.AliasName)
-	} else if a.ko.Spec.AliasName != nil && b.ko.Spec.AliasName != nil {
-		if *a.ko.Spec.AliasName != *b.ko.Spec.AliasName {
-			delta.Add("Spec.AliasName", a.ko.Spec.AliasName, b.ko.Spec.AliasName)
+	if ackcompare.HasNilDifference(a.ko.Spec.Name, b.ko.Spec.Name) {
+		delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
+	} else if a.ko.Spec.Name != nil && b.ko.Spec.Name != nil {
+		if *a.ko.Spec.Name != *b.ko.Spec.Name {
+			delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
 		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.TargetKeyID, b.ko.Spec.TargetKeyID) {
