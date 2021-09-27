@@ -36,7 +36,7 @@ spec:
           spec:
             description: AliasSpec defines the desired state of Alias.
             properties:
-              aliasName:
+              name:
                 description: "Specifies the alias name. This value must begin with
                   alias/ followed by a name, such as alias/ExampleAlias. \n The AliasName
                   value must be string of 1-256 characters. It can contain only alphanumeric
@@ -58,7 +58,7 @@ spec:
                   \n To get the key ID and key ARN for a CMK, use ListKeys or DescribeKey."
                 type: string
             required:
-            - aliasName
+            - name
             - targetKeyID
             type: object
           status:

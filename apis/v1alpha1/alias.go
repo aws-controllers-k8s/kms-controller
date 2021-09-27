@@ -30,7 +30,7 @@ type AliasSpec struct {
 	// (-). The alias name cannot begin with alias/aws/. The alias/aws/ prefix is
 	// reserved for AWS managed CMKs (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk).
 	// +kubebuilder:validation:Required
-	AliasName *string `json:"aliasName"`
+	Name *string `json:"name"`
 	// Associates the alias with the specified customer managed CMK (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk).
 	// The CMK must be in the same AWS Region.
 	//
