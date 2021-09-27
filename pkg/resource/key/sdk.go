@@ -105,11 +105,6 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Spec.CustomKeyStoreID = nil
 	}
-	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
-		ko.Spec.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
-	} else {
-		ko.Spec.CustomerMasterKeySpec = nil
-	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		ko.Status.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
 	} else {
@@ -126,13 +121,13 @@ func (rm *resourceManager) sdkFind(
 		ko.Status.Enabled = nil
 	}
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
-		f9 := []*string{}
-		for _, f9iter := range resp.KeyMetadata.EncryptionAlgorithms {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f8 := []*string{}
+		for _, f8iter := range resp.KeyMetadata.EncryptionAlgorithms {
+			var f8elem string
+			f8elem = *f8iter
+			f8 = append(f8, &f8elem)
 		}
-		ko.Status.EncryptionAlgorithms = f9
+		ko.Status.EncryptionAlgorithms = f8
 	} else {
 		ko.Status.EncryptionAlgorithms = nil
 	}
@@ -167,13 +162,13 @@ func (rm *resourceManager) sdkFind(
 		ko.Spec.Origin = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f16 := []*string{}
-		for _, f16iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f15 := []*string{}
+		for _, f15iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f15elem string
+			f15elem = *f15iter
+			f15 = append(f15, &f15elem)
 		}
-		ko.Status.SigningAlgorithms = f16
+		ko.Status.SigningAlgorithms = f15
 	} else {
 		ko.Status.SigningAlgorithms = nil
 	}
@@ -264,11 +259,6 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Spec.CustomKeyStoreID = nil
 	}
-	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
-		ko.Spec.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
-	} else {
-		ko.Spec.CustomerMasterKeySpec = nil
-	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		ko.Status.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
 	} else {
@@ -285,13 +275,13 @@ func (rm *resourceManager) sdkCreate(
 		ko.Status.Enabled = nil
 	}
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
-		f9 := []*string{}
-		for _, f9iter := range resp.KeyMetadata.EncryptionAlgorithms {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f8 := []*string{}
+		for _, f8iter := range resp.KeyMetadata.EncryptionAlgorithms {
+			var f8elem string
+			f8elem = *f8iter
+			f8 = append(f8, &f8elem)
 		}
-		ko.Status.EncryptionAlgorithms = f9
+		ko.Status.EncryptionAlgorithms = f8
 	} else {
 		ko.Status.EncryptionAlgorithms = nil
 	}
@@ -326,13 +316,13 @@ func (rm *resourceManager) sdkCreate(
 		ko.Spec.Origin = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f16 := []*string{}
-		for _, f16iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f15 := []*string{}
+		for _, f15iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f15elem string
+			f15elem = *f15iter
+			f15 = append(f15, &f15elem)
 		}
-		ko.Status.SigningAlgorithms = f16
+		ko.Status.SigningAlgorithms = f15
 	} else {
 		ko.Status.SigningAlgorithms = nil
 	}
@@ -360,9 +350,6 @@ func (rm *resourceManager) newCreateRequestPayload(
 	if r.ko.Spec.CustomKeyStoreID != nil {
 		res.SetCustomKeyStoreId(*r.ko.Spec.CustomKeyStoreID)
 	}
-	if r.ko.Spec.CustomerMasterKeySpec != nil {
-		res.SetCustomerMasterKeySpec(*r.ko.Spec.CustomerMasterKeySpec)
-	}
 	if r.ko.Spec.Description != nil {
 		res.SetDescription(*r.ko.Spec.Description)
 	}
@@ -376,18 +363,18 @@ func (rm *resourceManager) newCreateRequestPayload(
 		res.SetPolicy(*r.ko.Spec.Policy)
 	}
 	if r.ko.Spec.Tags != nil {
-		f7 := []*svcsdk.Tag{}
-		for _, f7iter := range r.ko.Spec.Tags {
-			f7elem := &svcsdk.Tag{}
-			if f7iter.TagKey != nil {
-				f7elem.SetTagKey(*f7iter.TagKey)
+		f6 := []*svcsdk.Tag{}
+		for _, f6iter := range r.ko.Spec.Tags {
+			f6elem := &svcsdk.Tag{}
+			if f6iter.TagKey != nil {
+				f6elem.SetTagKey(*f6iter.TagKey)
 			}
-			if f7iter.TagValue != nil {
-				f7elem.SetTagValue(*f7iter.TagValue)
+			if f6iter.TagValue != nil {
+				f6elem.SetTagValue(*f6iter.TagValue)
 			}
-			f7 = append(f7, f7elem)
+			f6 = append(f6, f6elem)
 		}
-		res.SetTags(f7)
+		res.SetTags(f6)
 	}
 
 	return res, nil
@@ -413,9 +400,30 @@ func (rm *resourceManager) sdkDelete(
 	rlog := ackrtlog.FromContext(ctx)
 	exit := rlog.Trace("rm.sdkDelete")
 	defer exit(err)
-	// TODO(jaypipes): Figure this out...
-	return nil, nil
+	input, err := rm.newDeleteRequestPayload(r)
+	if err != nil {
+		return nil, err
+	}
+	input.SetPendingWindowInDays(GetDeletePendingWindowInDays(&r.ko.ObjectMeta))
+	var resp *svcsdk.ScheduleKeyDeletionOutput
+	_ = resp
+	resp, err = rm.sdkapi.ScheduleKeyDeletionWithContext(ctx, input)
+	rm.metrics.RecordAPICall("DELETE", "ScheduleKeyDeletion", err)
+	return nil, err
+}
 
+// newDeleteRequestPayload returns an SDK-specific struct for the HTTP request
+// payload of the Delete API call for the resource
+func (rm *resourceManager) newDeleteRequestPayload(
+	r *resource,
+) (*svcsdk.ScheduleKeyDeletionInput, error) {
+	res := &svcsdk.ScheduleKeyDeletionInput{}
+
+	if r.ko.Status.KeyID != nil {
+		res.SetKeyId(*r.ko.Status.KeyID)
+	}
+
+	return res, nil
 }
 
 // setStatusDefaults sets default properties into supplied custom resource

@@ -55,13 +55,6 @@ func newResourceDelta(
 			delta.Add("Spec.CustomKeyStoreID", a.ko.Spec.CustomKeyStoreID, b.ko.Spec.CustomKeyStoreID)
 		}
 	}
-	if ackcompare.HasNilDifference(a.ko.Spec.CustomerMasterKeySpec, b.ko.Spec.CustomerMasterKeySpec) {
-		delta.Add("Spec.CustomerMasterKeySpec", a.ko.Spec.CustomerMasterKeySpec, b.ko.Spec.CustomerMasterKeySpec)
-	} else if a.ko.Spec.CustomerMasterKeySpec != nil && b.ko.Spec.CustomerMasterKeySpec != nil {
-		if *a.ko.Spec.CustomerMasterKeySpec != *b.ko.Spec.CustomerMasterKeySpec {
-			delta.Add("Spec.CustomerMasterKeySpec", a.ko.Spec.CustomerMasterKeySpec, b.ko.Spec.CustomerMasterKeySpec)
-		}
-	}
 	if ackcompare.HasNilDifference(a.ko.Spec.Description, b.ko.Spec.Description) {
 		delta.Add("Spec.Description", a.ko.Spec.Description, b.ko.Spec.Description)
 	} else if a.ko.Spec.Description != nil && b.ko.Spec.Description != nil {
