@@ -1,0 +1,8 @@
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+  name: $KEY_NAME
+  annotations:
+    kms.services.k8s.aws/pending-window-in-days: "$PENDING_WINDOW"
+spec:
+  description: "My delete window is longer!"

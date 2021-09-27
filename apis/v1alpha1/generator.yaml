@@ -38,3 +38,16 @@ resources:
     hooks:
       sdk_read_many_post_build_request:
         template_path: hooks/custom_key_store/sdk_read_many_post_build_request.go.tpl
+  Key:
+    hooks:
+      sdk_delete_post_build_request:
+        template_path: hooks/key/sdk_delete_post_build_request.go.tpl
+operations:
+  ScheduleKeyDeletion:
+    operation_type:
+      - Delete
+    resource_name: Key
+ignore:
+  field_paths:
+    - CreateKeyInput.CustomerMasterKeySpec
+    - KeyMetadata.CustomerMasterKeySpec
