@@ -244,13 +244,13 @@ func (in *CustomKeyStoreSpec) DeepCopyInto(out *CustomKeyStoreSpec) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.CustomKeyStoreName != nil {
-		in, out := &in.CustomKeyStoreName, &out.CustomKeyStoreName
+	if in.KeyStorePassword != nil {
+		in, out := &in.KeyStorePassword, &out.KeyStorePassword
 		*out = new(string)
 		**out = **in
 	}
-	if in.KeyStorePassword != nil {
-		in, out := &in.KeyStorePassword, &out.KeyStorePassword
+	if in.Name != nil {
+		in, out := &in.Name, &out.Name
 		*out = new(string)
 		**out = **in
 	}

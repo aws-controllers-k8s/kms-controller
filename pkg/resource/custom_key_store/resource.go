@@ -95,11 +95,11 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 	if identifier.NameOrID == "" {
 		return ackerrors.MissingNameIdentifier
 	}
-	r.ko.Spec.CustomKeyStoreName = &identifier.NameOrID
+	r.ko.Status.CustomKeyStoreID = &identifier.NameOrID
 
-	f0, f0ok := identifier.AdditionalKeys["customKeyStoreID"]
-	if f0ok {
-		r.ko.Status.CustomKeyStoreID = &f0
+	f1, f1ok := identifier.AdditionalKeys["name"]
+	if f1ok {
+		r.ko.Spec.Name = &f1
 	}
 
 	return nil
