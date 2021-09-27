@@ -28,10 +28,6 @@ type CustomKeyStoreSpec struct {
 	// operation.
 	// +kubebuilder:validation:Required
 	CloudHsmClusterID *string `json:"cloudHsmClusterID"`
-	// Specifies a friendly name for the custom key store. The name must be unique
-	// in your AWS account.
-	// +kubebuilder:validation:Required
-	CustomKeyStoreName *string `json:"customKeyStoreName"`
 	// Enter the password of the kmsuser crypto user (CU) account (https://docs.aws.amazon.com/kms/latest/developerguide/key-store-concepts.html#concept-kmsuser)
 	// in the specified AWS CloudHSM cluster. AWS KMS logs into the cluster as this
 	// user to manage key material on your behalf.
@@ -42,6 +38,10 @@ type CustomKeyStoreSpec struct {
 	// the password in the AWS CloudHSM cluster.
 	// +kubebuilder:validation:Required
 	KeyStorePassword *string `json:"keyStorePassword"`
+	// Specifies a friendly name for the custom key store. The name must be unique
+	// in your AWS account.
+	// +kubebuilder:validation:Required
+	Name *string `json:"name"`
 	// Enter the content of the trust anchor certificate for the cluster. This is
 	// the content of the customerCA.crt file that you created when you initialized
 	// the cluster (https://docs.aws.amazon.com/cloudhsm/latest/userguide/initialize-cluster.html).
