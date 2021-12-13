@@ -1,0 +1,42 @@
+---
+annotations:
+  capabilityLevel: Basic Install
+  shortDescription: AWS KMS controller is a service controller for managing KMS resources
+    in Kubernetes
+displayName: AWS Controllers for Kubernetes - Amazon KMS
+description: |-
+  Manage Key Management Service (KMS) resources in AWS from within your Kubernetes cluster.
+
+
+  **About Amazon KMS**
+
+
+  AWS Key Management Service (AWS KMS) is a managed service that makes it easy for you to create and control the cryptographic keys that are used to protect your data. AWS KMS uses hardware security modules (HSM) to protect and validate your AWS KMS keys under the [FIPS 140-2 Cryptographic Module Validation Program](https://csrc.nist.gov/projects/cryptographic-module-validation-program/Certificate/3139), except in the China (Beijing) and China (Ningxia) Regions.
+
+
+  **About the AWS Controllers for Kubernetes**
+
+
+  This controller is a component of the [AWS Controller for Kubernetes](https://github.com/aws/aws-controllers-k8s)
+  project. This project is currently in **developer preview**.
+
+
+  **Pre-Installation Steps**
+
+
+  Please follow the following link: [Red Hat OpenShift](https://aws-controllers-k8s.github.io/community/docs/user-docs/openshift/)
+samples:
+- kind: Alias
+  spec: '{}'
+- kind: CustomKeyStore
+  spec: '{}'
+- kind: Grant
+  spec: '{}'
+- kind: Key
+  spec: '{}'
+maintainers:
+- name: "kms maintainer team"
+  email: "ack-maintainers@amazon.com"
+links:
+- name: Amazon KMS Developer Resources
+  url: https://aws.amazon.com/kms/resources/
