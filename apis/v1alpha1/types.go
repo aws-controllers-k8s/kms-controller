@@ -53,11 +53,11 @@ type CustomKeyStoresListEntry struct {
 // in the grant only when the operation request includes the specified encryption
 // context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context).
 //
-// AWS KMS applies the grant constraints only to cryptographic operations that
-// support an encryption context, that is, all cryptographic operations with
-// a symmetric CMK (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+// KMS applies the grant constraints only to cryptographic operations that support
+// an encryption context, that is, all cryptographic operations with a symmetric
+// KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
 // Grant constraints are not applied to operations that do not support an encryption
-// context, such as cryptographic operations with asymmetric CMKs and management
+// context, such as cryptographic operations with asymmetric KMS keys and management
 // operations, such as DescribeKey or RetireGrant.
 //
 // In a cryptographic operation, the encryption context in the decryption operation
@@ -71,7 +71,7 @@ type CustomKeyStoresListEntry struct {
 // only by case. To require a fully case-sensitive encryption context, use the
 // kms:EncryptionContext: and kms:EncryptionContextKeys conditions in an IAM
 // or key policy. For details, see kms:EncryptionContext: (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-context)
-// in the AWS Key Management Service Developer Guide .
+// in the Key Management Service Developer Guide .
 type GrantConstraints struct {
 	EncryptionContextEquals map[string]*string `json:"encryptionContextEquals,omitempty"`
 	EncryptionContextSubset map[string]*string `json:"encryptionContextSubset,omitempty"`
@@ -83,11 +83,11 @@ type GrantListEntry struct {
 	// in the grant only when the operation request includes the specified encryption
 	// context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context).
 	//
-	// AWS KMS applies the grant constraints only to cryptographic operations that
-	// support an encryption context, that is, all cryptographic operations with
-	// a symmetric CMK (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+	// KMS applies the grant constraints only to cryptographic operations that support
+	// an encryption context, that is, all cryptographic operations with a symmetric
+	// KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
 	// Grant constraints are not applied to operations that do not support an encryption
-	// context, such as cryptographic operations with asymmetric CMKs and management
+	// context, such as cryptographic operations with asymmetric KMS keys and management
 	// operations, such as DescribeKey or RetireGrant.
 	//
 	// In a cryptographic operation, the encryption context in the decryption operation
@@ -101,7 +101,7 @@ type GrantListEntry struct {
 	// only by case. To require a fully case-sensitive encryption context, use the
 	// kms:EncryptionContext: and kms:EncryptionContextKeys conditions in an IAM
 	// or key policy. For details, see kms:EncryptionContext: (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-context)
-	// in the AWS Key Management Service Developer Guide .
+	// in the Key Management Service Developer Guide .
 	Constraints       *GrantConstraints `json:"constraints,omitempty"`
 	CreationDate      *metav1.Time      `json:"creationDate,omitempty"`
 	GrantID           *string           `json:"grantID,omitempty"`
@@ -119,7 +119,7 @@ type KeyListEntry struct {
 	KeyID  *string `json:"keyID,omitempty"`
 }
 
-// Contains metadata about a customer master key (CMK).
+// Contains metadata about a KMS key.
 //
 // This data type is used as a response element for the CreateKey and DescribeKey
 // operations.
@@ -136,11 +136,36 @@ type KeyMetadata struct {
 	ExpirationModel      *string      `json:"expirationModel,omitempty"`
 	KeyID                *string      `json:"keyID,omitempty"`
 	KeyManager           *string      `json:"keyManager,omitempty"`
+	KeySpec              *string      `json:"keySpec,omitempty"`
 	KeyState             *string      `json:"keyState,omitempty"`
 	KeyUsage             *string      `json:"keyUsage,omitempty"`
-	Origin               *string      `json:"origin,omitempty"`
-	SigningAlgorithms    []*string    `json:"signingAlgorithms,omitempty"`
-	ValidTo              *metav1.Time `json:"validTo,omitempty"`
+	MultiRegion          *bool        `json:"multiRegion,omitempty"`
+	// Describes the configuration of this multi-Region key. This field appears
+	// only when the KMS key is a primary or replica of a multi-Region key.
+	//
+	// For more information about any listed KMS key, use the DescribeKey operation.
+	MultiRegionConfiguration    *MultiRegionConfiguration `json:"multiRegionConfiguration,omitempty"`
+	Origin                      *string                   `json:"origin,omitempty"`
+	PendingDeletionWindowInDays *int64                    `json:"pendingDeletionWindowInDays,omitempty"`
+	SigningAlgorithms           []*string                 `json:"signingAlgorithms,omitempty"`
+	ValidTo                     *metav1.Time              `json:"validTo,omitempty"`
+}
+
+// Describes the configuration of this multi-Region key. This field appears
+// only when the KMS key is a primary or replica of a multi-Region key.
+//
+// For more information about any listed KMS key, use the DescribeKey operation.
+type MultiRegionConfiguration struct {
+	MultiRegionKeyType *string `json:"multiRegionKeyType,omitempty"`
+	// Describes the primary or replica key in a multi-Region key.
+	PrimaryKey  *MultiRegionKey   `json:"primaryKey,omitempty"`
+	ReplicaKeys []*MultiRegionKey `json:"replicaKeys,omitempty"`
+}
+
+// Describes the primary or replica key in a multi-Region key.
+type MultiRegionKey struct {
+	ARN    *string `json:"arn,omitempty"`
+	Region *string `json:"region,omitempty"`
 }
 
 // A key-value pair. A tag consists of a tag key and a tag value. Tag keys and
@@ -148,7 +173,7 @@ type KeyMetadata struct {
 //
 // For information about the rules that apply to tag keys and tag values, see
 // User-Defined Tag Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
-// in the AWS Billing and Cost Management User Guide.
+// in the Amazon Web Services Billing and Cost Management User Guide.
 type Tag struct {
 	TagKey   *string `json:"tagKey,omitempty"`
 	TagValue *string `json:"tagValue,omitempty"`
