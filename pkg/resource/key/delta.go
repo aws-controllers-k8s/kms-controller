@@ -62,11 +62,25 @@ func newResourceDelta(
 			delta.Add("Spec.Description", a.ko.Spec.Description, b.ko.Spec.Description)
 		}
 	}
+	if ackcompare.HasNilDifference(a.ko.Spec.KeySpec, b.ko.Spec.KeySpec) {
+		delta.Add("Spec.KeySpec", a.ko.Spec.KeySpec, b.ko.Spec.KeySpec)
+	} else if a.ko.Spec.KeySpec != nil && b.ko.Spec.KeySpec != nil {
+		if *a.ko.Spec.KeySpec != *b.ko.Spec.KeySpec {
+			delta.Add("Spec.KeySpec", a.ko.Spec.KeySpec, b.ko.Spec.KeySpec)
+		}
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.KeyUsage, b.ko.Spec.KeyUsage) {
 		delta.Add("Spec.KeyUsage", a.ko.Spec.KeyUsage, b.ko.Spec.KeyUsage)
 	} else if a.ko.Spec.KeyUsage != nil && b.ko.Spec.KeyUsage != nil {
 		if *a.ko.Spec.KeyUsage != *b.ko.Spec.KeyUsage {
 			delta.Add("Spec.KeyUsage", a.ko.Spec.KeyUsage, b.ko.Spec.KeyUsage)
+		}
+	}
+	if ackcompare.HasNilDifference(a.ko.Spec.MultiRegion, b.ko.Spec.MultiRegion) {
+		delta.Add("Spec.MultiRegion", a.ko.Spec.MultiRegion, b.ko.Spec.MultiRegion)
+	} else if a.ko.Spec.MultiRegion != nil && b.ko.Spec.MultiRegion != nil {
+		if *a.ko.Spec.MultiRegion != *b.ko.Spec.MultiRegion {
+			delta.Add("Spec.MultiRegion", a.ko.Spec.MultiRegion, b.ko.Spec.MultiRegion)
 		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.Origin, b.ko.Spec.Origin) {

@@ -28,19 +28,19 @@ type AliasSpec struct {
 	// The AliasName value must be string of 1-256 characters. It can contain only
 	// alphanumeric characters, forward slashes (/), underscores (_), and dashes
 	// (-). The alias name cannot begin with alias/aws/. The alias/aws/ prefix is
-	// reserved for AWS managed CMKs (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk).
+	// reserved for Amazon Web Services managed keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk).
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
-	// Associates the alias with the specified customer managed CMK (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk).
-	// The CMK must be in the same AWS Region.
+	// Associates the alias with the specified customer managed key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk).
+	// The KMS key must be in the same Amazon Web Services Region.
 	//
-	// A valid CMK ID is required. If you supply a null or empty string value, this
+	// A valid key ID is required. If you supply a null or empty string value, this
 	// operation returns an error.
 	//
 	// For help finding the key ID and ARN, see Finding the Key ID and ARN (https://docs.aws.amazon.com/kms/latest/developerguide/viewing-keys.html#find-cmk-id-arn)
-	// in the AWS Key Management Service Developer Guide.
+	// in the Key Management Service Developer Guide .
 	//
-	// Specify the key ID or the Amazon Resource Name (ARN) of the CMK.
+	// Specify the key ID or key ARN of the KMS key.
 	//
 	// For example:
 	//
@@ -48,7 +48,7 @@ type AliasSpec struct {
 	//
 	//    * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
 	//
-	// To get the key ID and key ARN for a CMK, use ListKeys or DescribeKey.
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
 	// +kubebuilder:validation:Required
 	TargetKeyID *string `json:"targetKeyID"`
 }

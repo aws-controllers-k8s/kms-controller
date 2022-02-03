@@ -148,6 +148,11 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Status.KeyManager = nil
 	}
+	if resp.KeyMetadata.KeySpec != nil {
+		ko.Spec.KeySpec = resp.KeyMetadata.KeySpec
+	} else {
+		ko.Spec.KeySpec = nil
+	}
 	if resp.KeyMetadata.KeyState != nil {
 		ko.Status.KeyState = resp.KeyMetadata.KeyState
 	} else {
@@ -158,19 +163,62 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Spec.KeyUsage = nil
 	}
+	if resp.KeyMetadata.MultiRegion != nil {
+		ko.Spec.MultiRegion = resp.KeyMetadata.MultiRegion
+	} else {
+		ko.Spec.MultiRegion = nil
+	}
+	if resp.KeyMetadata.MultiRegionConfiguration != nil {
+		f16 := &svcapitypes.MultiRegionConfiguration{}
+		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
+			f16.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+		}
+		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
+			f16f1 := &svcapitypes.MultiRegionKey{}
+			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn != nil {
+				f16f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
+			}
+			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region != nil {
+				f16f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
+			}
+			f16.PrimaryKey = f16f1
+		}
+		if resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys != nil {
+			f16f2 := []*svcapitypes.MultiRegionKey{}
+			for _, f16f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
+				f16f2elem := &svcapitypes.MultiRegionKey{}
+				if f16f2iter.Arn != nil {
+					f16f2elem.ARN = f16f2iter.Arn
+				}
+				if f16f2iter.Region != nil {
+					f16f2elem.Region = f16f2iter.Region
+				}
+				f16f2 = append(f16f2, f16f2elem)
+			}
+			f16.ReplicaKeys = f16f2
+		}
+		ko.Status.MultiRegionConfiguration = f16
+	} else {
+		ko.Status.MultiRegionConfiguration = nil
+	}
 	if resp.KeyMetadata.Origin != nil {
 		ko.Spec.Origin = resp.KeyMetadata.Origin
 	} else {
 		ko.Spec.Origin = nil
 	}
+	if resp.KeyMetadata.PendingDeletionWindowInDays != nil {
+		ko.Status.PendingDeletionWindowInDays = resp.KeyMetadata.PendingDeletionWindowInDays
+	} else {
+		ko.Status.PendingDeletionWindowInDays = nil
+	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f15 := []*string{}
-		for _, f15iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f15elem string
-			f15elem = *f15iter
-			f15 = append(f15, &f15elem)
+		f19 := []*string{}
+		for _, f19iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f19elem string
+			f19elem = *f19iter
+			f19 = append(f19, &f19elem)
 		}
-		ko.Status.SigningAlgorithms = f15
+		ko.Status.SigningAlgorithms = f19
 	} else {
 		ko.Status.SigningAlgorithms = nil
 	}
@@ -302,6 +350,11 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.KeyManager = nil
 	}
+	if resp.KeyMetadata.KeySpec != nil {
+		ko.Spec.KeySpec = resp.KeyMetadata.KeySpec
+	} else {
+		ko.Spec.KeySpec = nil
+	}
 	if resp.KeyMetadata.KeyState != nil {
 		ko.Status.KeyState = resp.KeyMetadata.KeyState
 	} else {
@@ -312,19 +365,62 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Spec.KeyUsage = nil
 	}
+	if resp.KeyMetadata.MultiRegion != nil {
+		ko.Spec.MultiRegion = resp.KeyMetadata.MultiRegion
+	} else {
+		ko.Spec.MultiRegion = nil
+	}
+	if resp.KeyMetadata.MultiRegionConfiguration != nil {
+		f16 := &svcapitypes.MultiRegionConfiguration{}
+		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
+			f16.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+		}
+		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
+			f16f1 := &svcapitypes.MultiRegionKey{}
+			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn != nil {
+				f16f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
+			}
+			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region != nil {
+				f16f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
+			}
+			f16.PrimaryKey = f16f1
+		}
+		if resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys != nil {
+			f16f2 := []*svcapitypes.MultiRegionKey{}
+			for _, f16f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
+				f16f2elem := &svcapitypes.MultiRegionKey{}
+				if f16f2iter.Arn != nil {
+					f16f2elem.ARN = f16f2iter.Arn
+				}
+				if f16f2iter.Region != nil {
+					f16f2elem.Region = f16f2iter.Region
+				}
+				f16f2 = append(f16f2, f16f2elem)
+			}
+			f16.ReplicaKeys = f16f2
+		}
+		ko.Status.MultiRegionConfiguration = f16
+	} else {
+		ko.Status.MultiRegionConfiguration = nil
+	}
 	if resp.KeyMetadata.Origin != nil {
 		ko.Spec.Origin = resp.KeyMetadata.Origin
 	} else {
 		ko.Spec.Origin = nil
 	}
+	if resp.KeyMetadata.PendingDeletionWindowInDays != nil {
+		ko.Status.PendingDeletionWindowInDays = resp.KeyMetadata.PendingDeletionWindowInDays
+	} else {
+		ko.Status.PendingDeletionWindowInDays = nil
+	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f15 := []*string{}
-		for _, f15iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f15elem string
-			f15elem = *f15iter
-			f15 = append(f15, &f15elem)
+		f19 := []*string{}
+		for _, f19iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f19elem string
+			f19elem = *f19iter
+			f19 = append(f19, &f19elem)
 		}
-		ko.Status.SigningAlgorithms = f15
+		ko.Status.SigningAlgorithms = f19
 	} else {
 		ko.Status.SigningAlgorithms = nil
 	}
@@ -355,8 +451,14 @@ func (rm *resourceManager) newCreateRequestPayload(
 	if r.ko.Spec.Description != nil {
 		res.SetDescription(*r.ko.Spec.Description)
 	}
+	if r.ko.Spec.KeySpec != nil {
+		res.SetKeySpec(*r.ko.Spec.KeySpec)
+	}
 	if r.ko.Spec.KeyUsage != nil {
 		res.SetKeyUsage(*r.ko.Spec.KeyUsage)
+	}
+	if r.ko.Spec.MultiRegion != nil {
+		res.SetMultiRegion(*r.ko.Spec.MultiRegion)
 	}
 	if r.ko.Spec.Origin != nil {
 		res.SetOrigin(*r.ko.Spec.Origin)
@@ -365,18 +467,18 @@ func (rm *resourceManager) newCreateRequestPayload(
 		res.SetPolicy(*r.ko.Spec.Policy)
 	}
 	if r.ko.Spec.Tags != nil {
-		f6 := []*svcsdk.Tag{}
-		for _, f6iter := range r.ko.Spec.Tags {
-			f6elem := &svcsdk.Tag{}
-			if f6iter.TagKey != nil {
-				f6elem.SetTagKey(*f6iter.TagKey)
+		f8 := []*svcsdk.Tag{}
+		for _, f8iter := range r.ko.Spec.Tags {
+			f8elem := &svcsdk.Tag{}
+			if f8iter.TagKey != nil {
+				f8elem.SetTagKey(*f8iter.TagKey)
 			}
-			if f6iter.TagValue != nil {
-				f6elem.SetTagValue(*f6iter.TagValue)
+			if f8iter.TagValue != nil {
+				f8elem.SetTagValue(*f8iter.TagValue)
 			}
-			f6 = append(f6, f6elem)
+			f8 = append(f8, f8elem)
 		}
-		res.SetTags(f6)
+		res.SetTags(f8)
 	}
 
 	return res, nil

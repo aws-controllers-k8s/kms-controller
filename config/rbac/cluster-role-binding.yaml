@@ -8,5 +8,5 @@ roleRef:
   name: ack-kms-controller
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: ack-kms-controller
   namespace: ack-system
