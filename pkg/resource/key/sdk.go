@@ -232,6 +232,16 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
+	policy, err := rm.getPolicy(ctx, &resource{ko})
+	if err != nil {
+		return &resource{ko}, err
+	}
+	ko.Spec.Policy = policy
+	tags, err := rm.listTags(ctx, &resource{ko})
+	if err != nil {
+		return &resource{ko}, err
+	}
+	ko.Spec.Tags = FromACKTags(tags)
 	return &resource{ko}, nil
 }
 
@@ -436,6 +446,11 @@ func (rm *resourceManager) sdkCreate(
 	}
 
 	rm.setStatusDefaults(ko)
+	policy, err := rm.getPolicy(ctx, &resource{ko})
+	if err != nil {
+		return &resource{ko}, err
+	}
+	ko.Spec.Policy = policy
 	return &resource{ko}, nil
 }
 
@@ -497,8 +512,7 @@ func (rm *resourceManager) sdkUpdate(
 	latest *resource,
 	delta *ackcompare.Delta,
 ) (*resource, error) {
-	// TODO(jaypipes): Figure this out...
-	return nil, ackerr.NotImplemented
+	return rm.customUpdate(ctx, desired, latest, delta)
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API

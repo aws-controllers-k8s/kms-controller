@@ -13,18 +13,24 @@
 
 """Integration tests for the KMS Key resource
 """
-
+import json
 import logging
 import pytest
+import time
 
 from datetime import datetime, timedelta
 
 from acktest.k8s import resource as k8s
 from acktest.resources import random_suffix_name
+from acktest.aws.identity import get_region, get_account_id
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_kms_resource
+from e2e import tag
 from e2e.replacement_values import REPLACEMENT_VALUES
 
+MODIFY_WAIT_AFTER_SECONDS = 40
 DELETE_WAIT_AFTER_SECONDS = 30
+DELETE_WAIT_PERIODS = 3
+DELETE_WAIT_PERIOD_LENGTH_SECONDS = 10
 
 KEY_RESOURCE_PLURAL = "keys"
 
@@ -58,7 +64,7 @@ def simple_key():
 
     # Try to delete, if doesn't already exist
     try:
-        _, deleted = k8s.delete_custom_resource(ref, 3, 10)
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
         assert deleted
     except:
         pass
@@ -92,10 +98,63 @@ def delete_annotated_key():
 
     # Try to delete, if doesn't already exist
     try:
-        _, deleted = k8s.delete_custom_resource(ref, 3, 10)
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
         assert deleted
     except:
         pass
+
+@pytest.fixture
+def key_with_policy():
+    key_name = random_suffix_name("key-w-policy", 32)
+    key_description = 'Used for ACK key_with_policy testing'
+    account_id = get_account_id()
+    key_policy = {
+        "Version": "2012-10-17",
+        "Id": "ack-key-with-policy",
+        "Statement": [
+            {
+                "Sid": "Enable IAM User Permissions",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": f'arn:aws:iam::{account_id}:root'
+                },
+                "Action": "kms:*",
+                "Resource": "*"
+            }
+        ]
+    }
+
+    replacements = REPLACEMENT_VALUES.copy()
+    replacements["KEY_NAME"] = key_name
+    replacements["DESCRIPTION"] = key_description
+    replacements["KEY_POLICY"] = json.dumps(key_policy)
+
+    resource_data = load_kms_resource(
+        "key_with_policy",
+        additional_replacements=replacements,
+    )
+    logging.debug(resource_data)
+
+    # Create the k8s resource
+    ref = k8s.CustomResourceReference(
+        CRD_GROUP, CRD_VERSION, KEY_RESOURCE_PLURAL,
+        key_name, namespace="default",
+    )
+    k8s.create_custom_resource(ref, resource_data)
+    cr = k8s.wait_resource_consumed_by_controller(ref)
+
+    assert cr is not None
+    assert k8s.get_resource_exists(ref)
+
+    yield (ref, cr, key_policy)
+
+    # Try to delete, if doesn't already exist
+    try:
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
+        assert deleted
+    except:
+        pass
+
 
 @service_marker
 @pytest.mark.canary
@@ -125,12 +184,129 @@ class TestKey:
         assert key['KeyMetadata']['KeyId'] == key_id
         self._assert_key_alive(key)
 
-        _, deleted = k8s.delete_custom_resource(ref, 3, 5)
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
         assert deleted
 
-        # Should still exist, and have a deleted timestamp
-        key = kms_client.describe_key(KeyId=key_id)
-        self._assert_key_deleted(key)
+    def test_update_key_policy(self, kms_client, key_with_policy):
+        (ref, cr, input_policy) = key_with_policy
+
+        assert 'keyID' in cr['status']
+        key_id = cr['status']['keyID']
+
+        key_policy = kms_client.get_key_policy(KeyId=key_id, PolicyName='default')
+        assert 'ack-key-with-policy' in key_policy['Policy']
+
+        input_policy['Id'] = 'updated-key-policy'
+        updates = {
+            "spec": {
+                "policy": json.dumps(input_policy)
+            }
+        }
+
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+
+        key_policy = kms_client.get_key_policy(KeyId=key_id, PolicyName='default')
+        assert 'updated-key-policy' in key_policy['Policy']
+
+        # updating description should set terminal condition on the resource
+        # because only tags and policy related fields can be updated on the Key
+        # resource
+        updates = {
+            "spec": {
+                "description": 'only policy and tags update are supported'
+            }
+        }
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+        assert k8s.wait_on_condition(ref, "ACK.Terminal", "True", wait_periods=10)
+
+    def test_update_tags(self, kms_client, simple_key):
+        (ref, cr) = simple_key
+        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+
+        assert 'keyID' in cr['status']
+        key_id = cr['status']['keyID']
+
+        key_tags = kms_client.list_resource_tags(KeyId=key_id)
+        tag_map = tag.convert_to_map(key_tags['Tags'])
+        # verify that ACK system tags are present
+        tag.assert_ack_system_tags(tag_map)
+
+        # add new tags
+        updates = {
+                    "spec": {
+                        "tags": [
+                            {
+                                "tagKey": "key1",
+                                "tagValue": "value1"
+                            }
+                        ]
+                    }
+                }
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+
+        key_tags = kms_client.list_resource_tags(KeyId=key_id)
+        tag_map = tag.convert_to_map(key_tags['Tags'])
+        tag.assert_ack_system_tags(tag_map)
+        assert tag_map["key1"] == "value1"
+
+        # update existing tag
+        updates = {
+            "spec": {
+                "tags": [
+                    {
+                        "tagKey": "key1",
+                        "tagValue": "newValue"
+                    },
+                    {
+                        "tagKey": "key2",
+                        "tagValue": "value2"
+                    }
+                ]
+            }
+        }
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+
+        key_tags = kms_client.list_resource_tags(KeyId=key_id)
+        tag_map = tag.convert_to_map(key_tags['Tags'])
+        tag.assert_ack_system_tags(tag_map)
+        assert tag_map["key1"] == "newValue"
+        assert tag_map["key2"] == "value2"
+
+        # remove existing tag
+        updates = {
+            "spec": {
+                "tags": [
+                    {
+                        "tagKey": "key3",
+                        "tagValue": "value3"
+                    },
+                    {
+                        "tagKey": "key2",
+                        "tagValue": "value2"
+                    }
+                ]
+            }
+        }
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+
+        key_tags = kms_client.list_resource_tags(KeyId=key_id)
+        tag_map = tag.convert_to_map(key_tags['Tags'])
+        tag.assert_ack_system_tags(tag_map)
+        assert "key1" not in tag_map
+        assert tag_map["key3"] == "value3"
+        assert tag_map["key2"] == "value2"
+
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
+        assert deleted
 
     def test_delete_annotated_key(self, kms_client, delete_annotated_key):
         (ref, cr) = delete_annotated_key
@@ -142,7 +318,7 @@ class TestKey:
         assert key['KeyMetadata']['KeyId'] == key_id
         self._assert_key_alive(key)
 
-        _, deleted = k8s.delete_custom_resource(ref, 3, 5)
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
         assert deleted
 
         # Should still exist, and have a deleted timestamp
