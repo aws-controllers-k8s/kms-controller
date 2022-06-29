@@ -43,6 +43,19 @@ resources:
     tags:
       ignore: true
   Key:
+    fields:
+      Origin:
+        is_immutable: true
+      MultiRegion:
+        is_immutable: true
+      KeyUsage:
+        is_immutable: true
+      KeySpec:
+        is_immutable: true
+      Description:
+        is_immutable: true
+      CustomKeyStoreID:
+        is_immutable: true
     hooks:
       sdk_delete_post_build_request:
         template_path: hooks/key/sdk_delete_post_build_request.go.tpl

@@ -17,6 +17,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
@@ -64,14 +65,14 @@ func (rm *resourceManager) customUpdate(
 	defer func() {
 		exit(err)
 	}()
+	if immutableFieldChanges := rm.getImmutableFieldChanges(delta); len(immutableFieldChanges) > 0 {
+		msg := fmt.Sprintf("Immutable Spec fields have been modified: %s",
+			strings.Join(immutableFieldChanges, ","))
+		return nil, ackerr.NewTerminalError(fmt.Errorf(msg))
+	}
 	updatedRes := rm.concreteResource(desired.DeepCopy())
 	updatedRes.SetStatus(latest)
 
-	if delta.DifferentExcept("Spec.Policy", "Spec.Tags", "Spec.BypassPolicyLockoutSafetyCheck") {
-		return updatedRes, ackerr.NewTerminalError(
-			fmt.Errorf("KMS Key only supports update for Policy and Tags"),
-		)
-	}
 	if delta.DifferentAt("Spec.Policy") {
 		if updatedRes.ko.Spec.Policy != nil && *updatedRes.ko.Spec.Policy != "" {
 			if err = rm.updatePolicy(ctx, updatedRes); err != nil {

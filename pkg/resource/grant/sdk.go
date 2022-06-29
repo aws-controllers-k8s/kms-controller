@@ -18,6 +18,7 @@ package grant
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -45,6 +46,7 @@ var (
 	_ = &ackerr.NotFound
 	_ = &ackcondition.NotManagedMessage
 	_ = &reflect.Value{}
+	_ = fmt.Sprintf("")
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
