@@ -81,10 +81,6 @@ func (rm *resourceManager) customUpdate(
 		}
 	}
 	if delta.DifferentAt("Spec.Tags") {
-		err = rm.removeOldTags(ctx, updatedRes)
-		if err != nil {
-			return updatedRes, err
-		}
 		err = rm.updateTags(ctx, updatedRes)
 		if err != nil {
 			return updatedRes, err

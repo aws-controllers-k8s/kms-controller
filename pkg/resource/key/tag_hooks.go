@@ -29,7 +29,25 @@ func (rm *resourceManager) updateTags(ctx context.Context, r *resource) (err err
 	defer func() {
 		exit(err)
 	}()
+	latestTags, err := rm.listTags(ctx, r)
+	if err != nil {
+		return err
+	}
 	desiredTags := ToACKTags(r.ko.Spec.Tags)
+	// First remove the keys that are not present in desired state anymore
+	tagKeysToRemove := removedTagKeys(desiredTags, latestTags)
+	if tagKeysToRemove != nil && len(tagKeysToRemove) > 0 {
+		untagKeyInput := svcsdk.UntagResourceInput{
+			KeyId:   r.ko.Status.KeyID,
+			TagKeys: tagKeysToRemove,
+		}
+		_, err = rm.sdkapi.UntagResourceWithContext(ctx, &untagKeyInput)
+		rm.metrics.RecordAPICall("UPDATE", "UntagResource", err)
+		if err != nil {
+			return err
+		}
+	}
+	// Now tag the KMS Key with desired tags
 	if len(desiredTags) == 0 {
 		return nil
 	}
@@ -84,32 +102,6 @@ func (rm *resourceManager) listTags(ctx context.Context, r *resource) (tags ackt
 		}
 	}
 	return tags, nil
-}
-
-// removeOldTags performs the UntagResource API calls after collecting the tag
-// keys which are present on AWS resource but do not exist inside Spec.Tags
-// field of resource in the parameter
-func (rm *resourceManager) removeOldTags(ctx context.Context, r *resource) (err error) {
-	rlog := ackrtlog.FromContext(ctx)
-	exit := rlog.Trace("rm.removeOldTags")
-	defer func() {
-		exit(err)
-	}()
-	latestTags, err := rm.listTags(ctx, r)
-	if err != nil {
-		return err
-	}
-	desiredTags := ToACKTags(r.ko.Spec.Tags)
-	tagKeysToRemove := removedTagKeys(desiredTags, latestTags)
-	if tagKeysToRemove != nil && len(tagKeysToRemove) > 0 {
-		untagKeyInput := svcsdk.UntagResourceInput{
-			KeyId:   r.ko.Status.KeyID,
-			TagKeys: tagKeysToRemove,
-		}
-		_, err = rm.sdkapi.UntagResourceWithContext(ctx, &untagKeyInput)
-		rm.metrics.RecordAPICall("UPDATE", "UntagResource", err)
-	}
-	return err
 }
 
 // removedTagKeys returns the tag keys that are present inside latestTags but
