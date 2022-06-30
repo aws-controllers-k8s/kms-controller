@@ -18,6 +18,7 @@ package key
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -45,6 +46,7 @@ var (
 	_ = &ackerr.NotFound
 	_ = &ackcondition.NotManagedMessage
 	_ = &reflect.Value{}
+	_ = fmt.Sprintf("")
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
@@ -232,6 +234,16 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
+	policy, err := rm.getPolicy(ctx, &resource{ko})
+	if err != nil {
+		return &resource{ko}, err
+	}
+	ko.Spec.Policy = policy
+	tags, err := rm.listTags(ctx, &resource{ko})
+	if err != nil {
+		return &resource{ko}, err
+	}
+	ko.Spec.Tags = FromACKTags(tags)
 	return &resource{ko}, nil
 }
 
@@ -436,6 +448,11 @@ func (rm *resourceManager) sdkCreate(
 	}
 
 	rm.setStatusDefaults(ko)
+	policy, err := rm.getPolicy(ctx, &resource{ko})
+	if err != nil {
+		return &resource{ko}, err
+	}
+	ko.Spec.Policy = policy
 	return &resource{ko}, nil
 }
 
@@ -497,8 +514,7 @@ func (rm *resourceManager) sdkUpdate(
 	latest *resource,
 	delta *ackcompare.Delta,
 ) (*resource, error) {
-	// TODO(jaypipes): Figure this out...
-	return nil, ackerr.NotImplemented
+	return rm.customUpdate(ctx, desired, latest, delta)
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API
@@ -638,4 +654,31 @@ func (rm *resourceManager) updateConditions(
 func (rm *resourceManager) terminalAWSError(err error) bool {
 	// No terminal_errors specified for this resource in generator config
 	return false
+}
+
+// getImmutableFieldChanges returns list of immutable fields from the
+func (rm *resourceManager) getImmutableFieldChanges(
+	delta *ackcompare.Delta,
+) []string {
+	var fields []string
+	if delta.DifferentAt("Spec.MultiRegion") {
+		fields = append(fields, "MultiRegion")
+	}
+	if delta.DifferentAt("Spec.Origin") {
+		fields = append(fields, "Origin")
+	}
+	if delta.DifferentAt("Spec.CustomKeyStoreID") {
+		fields = append(fields, "CustomKeyStoreID")
+	}
+	if delta.DifferentAt("Spec.Description") {
+		fields = append(fields, "Description")
+	}
+	if delta.DifferentAt("Spec.KeySpec") {
+		fields = append(fields, "KeySpec")
+	}
+	if delta.DifferentAt("Spec.KeyUsage") {
+		fields = append(fields, "KeyUsage")
+	}
+
+	return fields
 }

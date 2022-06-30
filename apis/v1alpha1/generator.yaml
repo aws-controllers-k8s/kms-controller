@@ -43,12 +43,31 @@ resources:
     tags:
       ignore: true
   Key:
+    fields:
+      Origin:
+        is_immutable: true
+      MultiRegion:
+        is_immutable: true
+      KeyUsage:
+        is_immutable: true
+      KeySpec:
+        is_immutable: true
+      Description:
+        is_immutable: true
+      CustomKeyStoreID:
+        is_immutable: true
     hooks:
       sdk_delete_post_build_request:
         template_path: hooks/key/sdk_delete_post_build_request.go.tpl
+      sdk_read_one_post_set_output:
+        template_path: hooks/key/sdk_read_one_post_set_output.go.tpl
+      sdk_create_post_set_output:
+        template_path: hooks/key/sdk_create_post_set_output.go.tpl
     tags:
       key_name: TagKey
       value_name: TagValue
+    update_operation:
+      custom_method_name: customUpdate
   Grant:
     tags:
       ignore: true
