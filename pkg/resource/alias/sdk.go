@@ -26,6 +26,7 @@ import (
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackcondition "github.com/aws-controllers-k8s/runtime/pkg/condition"
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
+	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/kms"
@@ -47,6 +48,7 @@ var (
 	_ = &ackcondition.NotManagedMessage
 	_ = &reflect.Value{}
 	_ = fmt.Sprintf("")
+	_ = &ackrequeue.NoRequeue{}
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
@@ -70,8 +72,6 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
-	// Match by associated Key ID
-	input.KeyId = r.ko.Spec.TargetKeyID
 	var resp *svcsdk.ListAliasesOutput
 	resp, err = rm.sdkapi.ListAliasesWithContext(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
@@ -85,9 +85,25 @@ func (rm *resourceManager) sdkFind(
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
 	ko := r.ko.DeepCopy()
+	// TODO(vijtrip2): remove this pagination handling once it is handled by the
+	// ACK code-generator. https://github.com/aws-controllers-k8s/community/issues/1383
+	aliases := []*svcsdk.AliasListEntry{}
+	aliases = append(aliases, resp.Aliases...)
+	for resp.Truncated != nil && *resp.Truncated {
+		input.Marker = resp.NextMarker
+		resp, err = rm.sdkapi.ListAliasesWithContext(ctx, input)
+		rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
+		if err != nil {
+			if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
+				return nil, ackerr.NotFound
+			}
+			return nil, err
+		}
+		aliases = append(aliases, resp.Aliases...)
+	}
 	// Filter resulting aliases, matching only the one with the name in the spec
 	matchingAliases := []*svcsdk.AliasListEntry{}
-	for _, elem := range resp.Aliases {
+	for _, elem := range aliases {
 		if elem.AliasName == nil || r.ko.Spec.Name == nil {
 			continue
 		}
@@ -233,6 +249,9 @@ func (rm *resourceManager) newUpdateRequestPayload(
 ) (*svcsdk.UpdateAliasInput, error) {
 	res := &svcsdk.UpdateAliasInput{}
 
+	if r.ko.Spec.Name != nil {
+		res.SetAliasName(*r.ko.Spec.Name)
+	}
 	if r.ko.Spec.TargetKeyID != nil {
 		res.SetTargetKeyId(*r.ko.Spec.TargetKeyID)
 	}
