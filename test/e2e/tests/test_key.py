@@ -23,8 +23,8 @@ from datetime import datetime, timedelta
 from acktest.k8s import resource as k8s
 from acktest.resources import random_suffix_name
 from acktest.aws.identity import get_region, get_account_id
+from acktest import tags
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_kms_resource
-from e2e import tag
 from e2e.replacement_values import REPLACEMENT_VALUES
 
 MODIFY_WAIT_AFTER_SECONDS = 40
@@ -229,10 +229,12 @@ class TestKey:
         assert 'keyID' in cr['status']
         key_id = cr['status']['keyID']
 
-        key_tags = kms_client.list_resource_tags(KeyId=key_id)
-        tag_map = tag.convert_to_map(key_tags['Tags'])
-        # verify that ACK system tags are present
-        tag.assert_ack_system_tags(tag_map)
+        key_tags = kms_client.list_resource_tags(KeyId=key_id)['Tags']
+        tags.assert_ack_system_tags(
+            tags=key_tags,
+            key_member_name='TagKey',
+            value_member_name='TagValue'
+        )
 
         # add new tags
         updates = {
@@ -249,10 +251,18 @@ class TestKey:
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
         assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
 
-        key_tags = kms_client.list_resource_tags(KeyId=key_id)
-        tag_map = tag.convert_to_map(key_tags['Tags'])
-        tag.assert_ack_system_tags(tag_map)
-        assert tag_map["key1"] == "value1"
+        key_tags = kms_client.list_resource_tags(KeyId=key_id)['Tags']
+        tags.assert_ack_system_tags(
+            tags=key_tags,
+            key_member_name='TagKey',
+            value_member_name='TagValue'
+        )
+        tags.assert_equal_without_ack_tags(
+            expected={"key1": "value1"},
+            actual=key_tags,
+            key_member_name='TagKey',
+            value_member_name='TagValue'
+        )
 
         # update existing tag
         updates = {
@@ -273,11 +283,18 @@ class TestKey:
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
         assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
 
-        key_tags = kms_client.list_resource_tags(KeyId=key_id)
-        tag_map = tag.convert_to_map(key_tags['Tags'])
-        tag.assert_ack_system_tags(tag_map)
-        assert tag_map["key1"] == "newValue"
-        assert tag_map["key2"] == "value2"
+        key_tags = kms_client.list_resource_tags(KeyId=key_id)['Tags']
+        tags.assert_ack_system_tags(
+            tags=key_tags,
+            key_member_name='TagKey',
+            value_member_name='TagValue'
+        )
+        tags.assert_equal_without_ack_tags(
+            expected={"key1": "newValue", "key2": "value2"},
+            actual=key_tags,
+            key_member_name='TagKey',
+            value_member_name='TagValue'
+        )
 
         # remove existing tag
         updates = {
@@ -298,12 +315,18 @@ class TestKey:
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
         assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
 
-        key_tags = kms_client.list_resource_tags(KeyId=key_id)
-        tag_map = tag.convert_to_map(key_tags['Tags'])
-        tag.assert_ack_system_tags(tag_map)
-        assert "key1" not in tag_map
-        assert tag_map["key3"] == "value3"
-        assert tag_map["key2"] == "value2"
+        key_tags = kms_client.list_resource_tags(KeyId=key_id)['Tags']
+        tags.assert_ack_system_tags(
+            tags=key_tags,
+            key_member_name='TagKey',
+            value_member_name='TagValue'
+        )
+        tags.assert_equal_without_ack_tags(
+            expected={"key3": "value3", "key2": "value2"},
+            actual=key_tags,
+            key_member_name='TagKey',
+            value_member_name='TagValue'
+        )
 
         _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
         assert deleted
