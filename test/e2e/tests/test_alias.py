@@ -20,10 +20,12 @@ import pytest
 import time
 
 from acktest.k8s import resource as k8s
+from acktest.k8s.condition import CONDITION_TYPE_RESOURCE_SYNCED, CONDITION_TYPE_REFERENCES_RESOLVED
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_kms_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
 from e2e.tests.helper import KMSValidator
+from e2e.tests.test_key import KEY_RESOURCE_PLURAL
 
 CREATE_WAIT_AFTER_SECONDS = 30
 MODIFY_WAIT_AFTER_SECONDS = 30
@@ -31,7 +33,6 @@ DELETE_WAIT_AFTER_SECONDS = 30
 DELETE_WAIT_PERIODS = 3
 DELETE_WAIT_PERIOD_LENGTH_SECONDS = 10
 
-KEY_RESOURCE_PLURAL = "keys"
 ALIAS_RESOURCE_PLURAL = "aliases"
 
 kms_validator = KMSValidator(boto3.client('kms'))
@@ -93,7 +94,7 @@ class TestAlias:
         (ref, cr) = simple_alias
         another_key_id = another_key['KeyMetadata']['KeyId']
 
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
         assert 'arn' in cr['status']['ackResourceMetadata']
         alias_arn = cr['status']['ackResourceMetadata']['arn']
 
@@ -106,7 +107,7 @@ class TestAlias:
 
         k8s.patch_custom_resource(ref, updates)
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
         alias = kms_validator.get_alias(arn=alias_arn, target_key_id=another_key_id)
         assert alias is not None, f"Alias should not be None for key id {another_key_id}"
 
@@ -160,10 +161,10 @@ class TestAlias:
 
         time.sleep(CREATE_WAIT_AFTER_SECONDS)
 
-        assert k8s.wait_on_condition(key_ref, "ACK.ResourceSynced", "True", wait_periods=10)
-        assert k8s.wait_on_condition(alias_ref, "ACK.ResourceSynced", "True", wait_periods=10)
+        assert k8s.wait_on_condition(key_ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
+        assert k8s.wait_on_condition(alias_ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
 
-        assert k8s.wait_on_condition(alias_ref, "ACK.ReferencesResolved", "True", wait_periods=10)
+        assert k8s.wait_on_condition(alias_ref, CONDITION_TYPE_REFERENCES_RESOLVED, "True", wait_periods=10)
 
         alias_cr = k8s.get_resource(alias_ref)
         alias_arn = alias_cr['status']['ackResourceMetadata']['arn']
