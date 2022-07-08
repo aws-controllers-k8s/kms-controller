@@ -7,9 +7,15 @@ resources:
         from:
           operation: CreateAlias
           path: TargetKeyId
+        references:
+          resource: Key
+          path: Status.KeyID
     renames:
       operations:
         CreateAlias:
+          input_fields:
+            AliasName: Name
+        UpdateAlias:
           input_fields:
             AliasName: Name
         DeleteAlias:
@@ -19,8 +25,6 @@ resources:
       terminal_codes:
         - ValidationException
     hooks:
-      sdk_read_many_post_build_request:
-        template_path: hooks/alias/sdk_read_many_post_build_request.go.tpl
       sdk_read_many_pre_set_output:
         template_path: hooks/alias/sdk_read_many_pre_set_output.go.tpl
     tags:

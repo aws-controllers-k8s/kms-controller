@@ -55,6 +55,9 @@ func newResourceDelta(
 			delta.Add("Spec.TargetKeyID", a.ko.Spec.TargetKeyID, b.ko.Spec.TargetKeyID)
 		}
 	}
+	if !reflect.DeepEqual(a.ko.Spec.TargetKeyRef, b.ko.Spec.TargetKeyRef) {
+		delta.Add("Spec.TargetKeyRef", a.ko.Spec.TargetKeyRef, b.ko.Spec.TargetKeyRef)
+	}
 
 	return delta
 }

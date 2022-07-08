@@ -1,0 +1,6 @@
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+  name: $REF_KEY_NAME
+spec:
+  description: "Key created by ACK reference test"

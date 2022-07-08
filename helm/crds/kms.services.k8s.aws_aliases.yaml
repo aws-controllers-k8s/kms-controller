@@ -57,9 +57,22 @@ spec:
                   \n To get the key ID and key ARN for a KMS key, use ListKeys or
                   DescribeKey."
                 type: string
+              targetKeyRef:
+                description: 'AWSResourceReferenceWrapper provides a wrapper around
+                  *AWSResourceReference type to provide more user friendly syntax
+                  for references using ''from'' field Ex: APIIDRef:   from:     name:
+                  my-api'
+                properties:
+                  from:
+                    description: AWSResourceReference provides all the values necessary
+                      to reference another k8s resource for finding the identifier(Id/ARN/Name)
+                    properties:
+                      name:
+                        type: string
+                    type: object
+                type: object
             required:
             - name
-            - targetKeyID
             type: object
           status:
             description: AliasStatus defines the observed state of Alias

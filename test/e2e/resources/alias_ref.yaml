@@ -1,0 +1,9 @@
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Alias
+metadata:
+  name: $REF_ALIAS_NAME
+spec:
+  name: alias/$REF_ALIAS_NAME
+  targetKeyRef:
+    from:
+      name: $REF_KEY_NAME
