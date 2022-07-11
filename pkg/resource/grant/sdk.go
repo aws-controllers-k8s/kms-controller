@@ -304,8 +304,7 @@ func (rm *resourceManager) sdkUpdate(
 	latest *resource,
 	delta *ackcompare.Delta,
 ) (*resource, error) {
-	// TODO(jaypipes): Figure this out...
-	return nil, ackerr.NotImplemented
+	return rm.updateNotSupported(ctx, desired, latest, delta)
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API
@@ -318,9 +317,32 @@ func (rm *resourceManager) sdkDelete(
 	defer func() {
 		exit(err)
 	}()
-	// TODO(jaypipes): Figure this out...
-	return nil, nil
+	input, err := rm.newDeleteRequestPayload(r)
+	if err != nil {
+		return nil, err
+	}
+	var resp *svcsdk.RevokeGrantOutput
+	_ = resp
+	resp, err = rm.sdkapi.RevokeGrantWithContext(ctx, input)
+	rm.metrics.RecordAPICall("DELETE", "RevokeGrant", err)
+	return nil, err
+}
 
+// newDeleteRequestPayload returns an SDK-specific struct for the HTTP request
+// payload of the Delete API call for the resource
+func (rm *resourceManager) newDeleteRequestPayload(
+	r *resource,
+) (*svcsdk.RevokeGrantInput, error) {
+	res := &svcsdk.RevokeGrantInput{}
+
+	if r.ko.Status.GrantID != nil {
+		res.SetGrantId(*r.ko.Status.GrantID)
+	}
+	if r.ko.Spec.KeyID != nil {
+		res.SetKeyId(*r.ko.Spec.KeyID)
+	}
+
+	return res, nil
 }
 
 // setStatusDefaults sets default properties into supplied custom resource

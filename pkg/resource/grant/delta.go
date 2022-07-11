@@ -76,6 +76,9 @@ func newResourceDelta(
 			delta.Add("Spec.KeyID", a.ko.Spec.KeyID, b.ko.Spec.KeyID)
 		}
 	}
+	if !reflect.DeepEqual(a.ko.Spec.KeyRef, b.ko.Spec.KeyRef) {
+		delta.Add("Spec.KeyRef", a.ko.Spec.KeyRef, b.ko.Spec.KeyRef)
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.Name, b.ko.Spec.Name) {
 		delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
 	} else if a.ko.Spec.Name != nil && b.ko.Spec.Name != nil {
