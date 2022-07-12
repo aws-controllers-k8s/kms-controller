@@ -73,13 +73,24 @@ resources:
     update_operation:
       custom_method_name: customUpdate
   Grant:
+    fields:
+      KeyId:
+        references:
+          resource: Key
+          path: Status.KeyID
     tags:
       ignore: true
+    update_operation:
+      custom_method_name: updateNotSupported
 operations:
   ScheduleKeyDeletion:
     operation_type:
       - Delete
     resource_name: Key
+  RevokeGrant:
+    operation_type:
+      - Delete
+    resource_name: Grant
 ignore:
   field_paths:
     - CreateKeyInput.CustomerMasterKeySpec

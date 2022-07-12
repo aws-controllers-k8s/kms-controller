@@ -560,6 +560,11 @@ func (in *GrantSpec) DeepCopyInto(out *GrantSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.KeyRef != nil {
+		in, out := &in.KeyRef, &out.KeyRef
+		*out = new(corev1alpha1.AWSResourceReferenceWrapper)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Name != nil {
 		in, out := &in.Name, &out.Name
 		*out = new(string)

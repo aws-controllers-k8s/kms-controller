@@ -33,3 +33,17 @@ class KMSValidator:
             if alias['AliasArn'] == arn:
                 return alias
         return None
+
+    def assert_grant_exists(self, grant_id, key_id):
+        assert self.get_grant(grant_id=grant_id, key_id=key_id) is not None, \
+            f"grant {grant_id} for key {key_id} is not present"
+
+    def assert_grant_deleted(self, grant_id, key_id):
+        assert self.get_grant(grant_id=grant_id, key_id=key_id) is None, \
+            f"grant {grant_id} for key {key_id} is not deleted"
+
+    def get_grant(self, grant_id, key_id):
+        for grant in self.kms_client.list_grants(KeyId=key_id, GrantId=grant_id)['Grants']:
+            if grant['GrantId'] == grant_id:
+                return grant
+        return None

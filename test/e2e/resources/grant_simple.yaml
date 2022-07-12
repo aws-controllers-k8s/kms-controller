@@ -1,0 +1,11 @@
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Grant
+metadata:
+  name: $GRANT_NAME
+spec:
+  granteePrincipal: arn:aws:iam::$AWS_ACCOUNT_ID:root
+  keyID: $KEY_ID
+  name: $GRANT_NAME
+  operations:
+    - Encrypt
+  retiringPrincipal: arn:aws:iam::$AWS_ACCOUNT_ID:root
