@@ -4,7 +4,6 @@ aliases:
   # Always allow the core ACK maintainers to have access to your repository
   core-ack-team:
     - jaypipes
-    - mhausenblas
     - a-hilaly
     - RedbackThomson
     - vijtrip2

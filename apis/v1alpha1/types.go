@@ -40,13 +40,9 @@ type AliasListEntry struct {
 // Contains information about each custom key store in the custom key store
 // list.
 type CustomKeyStoresListEntry struct {
-	CloudHsmClusterID      *string      `json:"cloudHsmClusterID,omitempty"`
-	ConnectionErrorCode    *string      `json:"connectionErrorCode,omitempty"`
-	ConnectionState        *string      `json:"connectionState,omitempty"`
-	CreationDate           *metav1.Time `json:"creationDate,omitempty"`
-	CustomKeyStoreID       *string      `json:"customKeyStoreID,omitempty"`
-	CustomKeyStoreName     *string      `json:"customKeyStoreName,omitempty"`
-	TrustAnchorCertificate *string      `json:"trustAnchorCertificate,omitempty"`
+	CloudHsmClusterID *string      `json:"cloudHsmClusterID,omitempty"`
+	CreationDate      *metav1.Time `json:"creationDate,omitempty"`
+	CustomKeyStoreID  *string      `json:"customKeyStoreID,omitempty"`
 }
 
 // Use this structure to allow cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)

@@ -28,8 +28,6 @@ description: |-
 samples:
 - kind: Alias
   spec: '{}'
-- kind: CustomKeyStore
-  spec: '{}'
 - kind: Grant
   spec: '{}'
 - kind: Key
