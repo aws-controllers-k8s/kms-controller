@@ -35,7 +35,6 @@ import (
 	svcresource "github.com/aws-controllers-k8s/kms-controller/pkg/resource"
 
 	_ "github.com/aws-controllers-k8s/kms-controller/pkg/resource/alias"
-	_ "github.com/aws-controllers-k8s/kms-controller/pkg/resource/custom_key_store"
 	_ "github.com/aws-controllers-k8s/kms-controller/pkg/resource/grant"
 	_ "github.com/aws-controllers-k8s/kms-controller/pkg/resource/key"
 

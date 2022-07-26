@@ -10,7 +10,6 @@ rules:
   - kms.services.k8s.aws
   resources:
   - aliases
-  - customkeystores
   - grants
   - keys
   verbs:
