@@ -26,15 +26,16 @@ const (
 type ConnectionErrorCodeType string
 
 const (
-	ConnectionErrorCodeType_INVALID_CREDENTIALS        ConnectionErrorCodeType = "INVALID_CREDENTIALS"
-	ConnectionErrorCodeType_CLUSTER_NOT_FOUND          ConnectionErrorCodeType = "CLUSTER_NOT_FOUND"
-	ConnectionErrorCodeType_NETWORK_ERRORS             ConnectionErrorCodeType = "NETWORK_ERRORS"
-	ConnectionErrorCodeType_INTERNAL_ERROR             ConnectionErrorCodeType = "INTERNAL_ERROR"
-	ConnectionErrorCodeType_INSUFFICIENT_CLOUDHSM_HSMS ConnectionErrorCodeType = "INSUFFICIENT_CLOUDHSM_HSMS"
-	ConnectionErrorCodeType_USER_LOCKED_OUT            ConnectionErrorCodeType = "USER_LOCKED_OUT"
-	ConnectionErrorCodeType_USER_NOT_FOUND             ConnectionErrorCodeType = "USER_NOT_FOUND"
-	ConnectionErrorCodeType_USER_LOGGED_IN             ConnectionErrorCodeType = "USER_LOGGED_IN"
-	ConnectionErrorCodeType_SUBNET_NOT_FOUND           ConnectionErrorCodeType = "SUBNET_NOT_FOUND"
+	ConnectionErrorCodeType_INVALID_CREDENTIALS                   ConnectionErrorCodeType = "INVALID_CREDENTIALS"
+	ConnectionErrorCodeType_CLUSTER_NOT_FOUND                     ConnectionErrorCodeType = "CLUSTER_NOT_FOUND"
+	ConnectionErrorCodeType_NETWORK_ERRORS                        ConnectionErrorCodeType = "NETWORK_ERRORS"
+	ConnectionErrorCodeType_INTERNAL_ERROR                        ConnectionErrorCodeType = "INTERNAL_ERROR"
+	ConnectionErrorCodeType_INSUFFICIENT_CLOUDHSM_HSMS            ConnectionErrorCodeType = "INSUFFICIENT_CLOUDHSM_HSMS"
+	ConnectionErrorCodeType_USER_LOCKED_OUT                       ConnectionErrorCodeType = "USER_LOCKED_OUT"
+	ConnectionErrorCodeType_USER_NOT_FOUND                        ConnectionErrorCodeType = "USER_NOT_FOUND"
+	ConnectionErrorCodeType_USER_LOGGED_IN                        ConnectionErrorCodeType = "USER_LOGGED_IN"
+	ConnectionErrorCodeType_SUBNET_NOT_FOUND                      ConnectionErrorCodeType = "SUBNET_NOT_FOUND"
+	ConnectionErrorCodeType_INSUFFICIENT_FREE_ADDRESSES_IN_SUBNET ConnectionErrorCodeType = "INSUFFICIENT_FREE_ADDRESSES_IN_SUBNET"
 )
 
 type ConnectionStateType string
@@ -58,6 +59,11 @@ const (
 	CustomerMasterKeySpec_ECC_NIST_P521     CustomerMasterKeySpec = "ECC_NIST_P521"
 	CustomerMasterKeySpec_ECC_SECG_P256K1   CustomerMasterKeySpec = "ECC_SECG_P256K1"
 	CustomerMasterKeySpec_SYMMETRIC_DEFAULT CustomerMasterKeySpec = "SYMMETRIC_DEFAULT"
+	CustomerMasterKeySpec_HMAC_224          CustomerMasterKeySpec = "HMAC_224"
+	CustomerMasterKeySpec_HMAC_256          CustomerMasterKeySpec = "HMAC_256"
+	CustomerMasterKeySpec_HMAC_384          CustomerMasterKeySpec = "HMAC_384"
+	CustomerMasterKeySpec_HMAC_512          CustomerMasterKeySpec = "HMAC_512"
+	CustomerMasterKeySpec_SM2               CustomerMasterKeySpec = "SM2"
 )
 
 type DataKeyPairSpec string
@@ -70,6 +76,7 @@ const (
 	DataKeyPairSpec_ECC_NIST_P384   DataKeyPairSpec = "ECC_NIST_P384"
 	DataKeyPairSpec_ECC_NIST_P521   DataKeyPairSpec = "ECC_NIST_P521"
 	DataKeyPairSpec_ECC_SECG_P256K1 DataKeyPairSpec = "ECC_SECG_P256K1"
+	DataKeyPairSpec_SM2             DataKeyPairSpec = "SM2"
 )
 
 type DataKeySpec string
@@ -85,6 +92,7 @@ const (
 	EncryptionAlgorithmSpec_SYMMETRIC_DEFAULT  EncryptionAlgorithmSpec = "SYMMETRIC_DEFAULT"
 	EncryptionAlgorithmSpec_RSAES_OAEP_SHA_1   EncryptionAlgorithmSpec = "RSAES_OAEP_SHA_1"
 	EncryptionAlgorithmSpec_RSAES_OAEP_SHA_256 EncryptionAlgorithmSpec = "RSAES_OAEP_SHA_256"
+	EncryptionAlgorithmSpec_SM2PKE             EncryptionAlgorithmSpec = "SM2PKE"
 )
 
 type ExpirationModelType string
@@ -111,6 +119,8 @@ const (
 	GrantOperation_DescribeKey                         GrantOperation = "DescribeKey"
 	GrantOperation_GenerateDataKeyPair                 GrantOperation = "GenerateDataKeyPair"
 	GrantOperation_GenerateDataKeyPairWithoutPlaintext GrantOperation = "GenerateDataKeyPairWithoutPlaintext"
+	GrantOperation_GenerateMac                         GrantOperation = "GenerateMac"
+	GrantOperation_VerifyMac                           GrantOperation = "VerifyMac"
 )
 
 type KeyManagerType string
@@ -131,6 +141,11 @@ const (
 	KeySpec_SDK_ECC_NIST_P521     KeySpec_SDK = "ECC_NIST_P521"
 	KeySpec_SDK_ECC_SECG_P256K1   KeySpec_SDK = "ECC_SECG_P256K1"
 	KeySpec_SDK_SYMMETRIC_DEFAULT KeySpec_SDK = "SYMMETRIC_DEFAULT"
+	KeySpec_SDK_HMAC_224          KeySpec_SDK = "HMAC_224"
+	KeySpec_SDK_HMAC_256          KeySpec_SDK = "HMAC_256"
+	KeySpec_SDK_HMAC_384          KeySpec_SDK = "HMAC_384"
+	KeySpec_SDK_HMAC_512          KeySpec_SDK = "HMAC_512"
+	KeySpec_SDK_SM2               KeySpec_SDK = "SM2"
 )
 
 type KeyState string
@@ -149,8 +164,18 @@ const (
 type KeyUsageType string
 
 const (
-	KeyUsageType_SIGN_VERIFY     KeyUsageType = "SIGN_VERIFY"
-	KeyUsageType_ENCRYPT_DECRYPT KeyUsageType = "ENCRYPT_DECRYPT"
+	KeyUsageType_SIGN_VERIFY         KeyUsageType = "SIGN_VERIFY"
+	KeyUsageType_ENCRYPT_DECRYPT     KeyUsageType = "ENCRYPT_DECRYPT"
+	KeyUsageType_GENERATE_VERIFY_MAC KeyUsageType = "GENERATE_VERIFY_MAC"
+)
+
+type MacAlgorithmSpec string
+
+const (
+	MacAlgorithmSpec_HMAC_SHA_224 MacAlgorithmSpec = "HMAC_SHA_224"
+	MacAlgorithmSpec_HMAC_SHA_256 MacAlgorithmSpec = "HMAC_SHA_256"
+	MacAlgorithmSpec_HMAC_SHA_384 MacAlgorithmSpec = "HMAC_SHA_384"
+	MacAlgorithmSpec_HMAC_SHA_512 MacAlgorithmSpec = "HMAC_SHA_512"
 )
 
 type MessageType string
@@ -187,6 +212,7 @@ const (
 	SigningAlgorithmSpec_ECDSA_SHA_256             SigningAlgorithmSpec = "ECDSA_SHA_256"
 	SigningAlgorithmSpec_ECDSA_SHA_384             SigningAlgorithmSpec = "ECDSA_SHA_384"
 	SigningAlgorithmSpec_ECDSA_SHA_512             SigningAlgorithmSpec = "ECDSA_SHA_512"
+	SigningAlgorithmSpec_SM2DSA                    SigningAlgorithmSpec = "SM2DSA"
 )
 
 type WrappingKeySpec string

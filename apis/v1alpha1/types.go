@@ -51,10 +51,10 @@ type CustomKeyStoresListEntry struct {
 //
 // KMS applies the grant constraints only to cryptographic operations that support
 // an encryption context, that is, all cryptographic operations with a symmetric
-// KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+// encryption KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
 // Grant constraints are not applied to operations that do not support an encryption
-// context, such as cryptographic operations with asymmetric KMS keys and management
-// operations, such as DescribeKey or RetireGrant.
+// context, such as cryptographic operations with HMAC KMS keys or asymmetric
+// KMS keys, and management operations, such as DescribeKey or RetireGrant.
 //
 // In a cryptographic operation, the encryption context in the decryption operation
 // must be an exact, case-sensitive match for the keys and values in the encryption
@@ -81,10 +81,10 @@ type GrantListEntry struct {
 	//
 	// KMS applies the grant constraints only to cryptographic operations that support
 	// an encryption context, that is, all cryptographic operations with a symmetric
-	// KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+	// encryption KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
 	// Grant constraints are not applied to operations that do not support an encryption
-	// context, such as cryptographic operations with asymmetric KMS keys and management
-	// operations, such as DescribeKey or RetireGrant.
+	// context, such as cryptographic operations with HMAC KMS keys or asymmetric
+	// KMS keys, and management operations, such as DescribeKey or RetireGrant.
 	//
 	// In a cryptographic operation, the encryption context in the decryption operation
 	// must be an exact, case-sensitive match for the keys and values in the encryption
@@ -135,6 +135,7 @@ type KeyMetadata struct {
 	KeySpec              *string      `json:"keySpec,omitempty"`
 	KeyState             *string      `json:"keyState,omitempty"`
 	KeyUsage             *string      `json:"keyUsage,omitempty"`
+	MacAlgorithms        []*string    `json:"macAlgorithms,omitempty"`
 	MultiRegion          *bool        `json:"multiRegion,omitempty"`
 	// Describes the configuration of this multi-Region key. This field appears
 	// only when the KMS key is a primary or replica of a multi-Region key.

@@ -43,16 +43,15 @@ type KeySpec struct {
 	// custom key store must have at least two active HSMs, each in a different
 	// Availability Zone in the Region.
 	//
-	// This parameter is valid only for symmetric KMS keys and regional KMS keys.
-	// You cannot create an asymmetric KMS key or a multi-Region key in a custom
-	// key store.
+	// This parameter is valid only for symmetric encryption KMS keys in a single
+	// Region. You cannot create any other type of KMS key in a custom key store.
 	//
 	// To find the ID of a custom key store, use the DescribeCustomKeyStores operation.
 	//
 	// The response includes the custom key store ID and the ID of the CloudHSM
 	// cluster.
 	//
-	// This operation is part of the Custom Key Store feature (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html)
+	// This operation is part of the custom key store feature (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html)
 	// feature in KMS, which combines the convenience and extensive integration
 	// of KMS with the isolation and control of a single-tenant key store.
 	CustomKeyStoreID *string `json:"customKeyStoreID,omitempty"`
@@ -64,29 +63,31 @@ type KeySpec struct {
 	// To set or change the description after the key is created, use UpdateKeyDescription.
 	Description *string `json:"description,omitempty"`
 	// Specifies the type of KMS key to create. The default value, SYMMETRIC_DEFAULT,
-	// creates a KMS key with a 256-bit symmetric key for encryption and decryption.
-	// For help choosing a key spec for your KMS key, see How to Choose Your KMS
-	// key Configuration (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose.html)
+	// creates a KMS key with a 256-bit AES-GCM key that is used for encryption
+	// and decryption, except in China Regions, where it creates a 128-bit symmetric
+	// key that uses SM4 encryption. For help choosing a key spec for your KMS key,
+	// see Choosing a KMS key type (https://docs.aws.amazon.com/kms/latest/developerguide/key-types.html#symm-asymm-choose)
 	// in the Key Management Service Developer Guide .
 	//
 	// The KeySpec determines whether the KMS key contains a symmetric key or an
-	// asymmetric key pair. It also determines the encryption algorithms or signing
-	// algorithms that the KMS key supports. You can't change the KeySpec after
-	// the KMS key is created. To further restrict the algorithms that can be used
-	// with the KMS key, use a condition key in its key policy or IAM policy. For
-	// more information, see kms:EncryptionAlgorithm (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-algorithm)
+	// asymmetric key pair. It also determines the cryptographic algorithms that
+	// the KMS key supports. You can't change the KeySpec after the KMS key is created.
+	// To further restrict the algorithms that can be used with the KMS key, use
+	// a condition key in its key policy or IAM policy. For more information, see
+	// kms:EncryptionAlgorithm (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-algorithm),
+	// kms:MacAlgorithm (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-mac-algorithm)
 	// or kms:Signing Algorithm (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-signing-algorithm)
 	// in the Key Management Service Developer Guide .
 	//
 	// Amazon Web Services services that are integrated with KMS (http://aws.amazon.com/kms/features/#AWS_Service_Integration)
-	// use symmetric KMS keys to protect your data. These services do not support
-	// asymmetric KMS keys. For help determining whether a KMS key is symmetric
-	// or asymmetric, see Identifying Symmetric and Asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/find-symm-asymm.html)
-	// in the Key Management Service Developer Guide.
+	// use symmetric encryption KMS keys to protect your data. These services do
+	// not support asymmetric KMS keys or HMAC KMS keys.
 	//
 	// KMS supports the following key specs for KMS keys:
 	//
-	//    * Symmetric key (default) SYMMETRIC_DEFAULT (AES-256-GCM)
+	//    * Symmetric encryption key (default) SYMMETRIC_DEFAULT
+	//
+	//    * HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
 	//
 	//    * Asymmetric RSA key pairs RSA_2048 RSA_3072 RSA_4096
 	//
@@ -95,20 +96,28 @@ type KeySpec struct {
 	//
 	//    * Other asymmetric elliptic curve key pairs ECC_SECG_P256K1 (secp256k1),
 	//    commonly used for cryptocurrencies.
+	//
+	//    * SM2 key pairs (China Regions only) SM2
 	KeySpec *string `json:"keySpec,omitempty"`
 	// Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
 	// for which you can use the KMS key. The default value is ENCRYPT_DECRYPT.
-	// This parameter is required only for asymmetric KMS keys. You can't change
-	// the KeyUsage value after the KMS key is created.
+	// This parameter is optional when you are creating a symmetric encryption KMS
+	// key; otherwise, it is required. You can't change the KeyUsage value after
+	// the KMS key is created.
 	//
 	// Select only one valid value.
 	//
-	//    * For symmetric KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
+	//    * For symmetric encryption KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
+	//
+	//    * For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
 	//
 	//    * For asymmetric KMS keys with RSA key material, specify ENCRYPT_DECRYPT
 	//    or SIGN_VERIFY.
 	//
 	//    * For asymmetric KMS keys with ECC key material, specify SIGN_VERIFY.
+	//
+	//    * For asymmetric KMS keys with SM2 key material (China Regions only),
+	//    specify ENCRYPT_DECRYPT or SIGN_VERIFY.
 	KeyUsage *string `json:"keyUsage,omitempty"`
 	// Creates a multi-Region primary key that you can replicate into other Amazon
 	// Web Services Regions. You cannot change this value after you create the KMS
@@ -123,15 +132,15 @@ type KeySpec struct {
 	// you can use them interchangeably to encrypt data in one Amazon Web Services
 	// Region and decrypt it in a different Amazon Web Services Region without re-encrypting
 	// the data or making a cross-Region call. For more information about multi-Region
-	// keys, see Using multi-Region keys (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html)
+	// keys, see Multi-Region keys in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html)
 	// in the Key Management Service Developer Guide.
 	//
 	// This value creates a primary key, not a replica. To create a replica key,
 	// use the ReplicateKey operation.
 	//
-	// You can create a symmetric or asymmetric multi-Region key, and you can create
-	// a multi-Region key with imported key material. However, you cannot create
-	// a multi-Region key in a custom key store.
+	// You can create a multi-Region version of a symmetric encryption KMS key,
+	// an HMAC KMS key, an asymmetric KMS key, or a KMS key with imported key material.
+	// However, you cannot create a multi-Region key in a custom key store.
 	MultiRegion *bool `json:"multiRegion,omitempty"`
 	// The source of the key material for the KMS key. You cannot change the origin
 	// after you create the KMS key. The default is AWS_KMS, which means that KMS
@@ -141,19 +150,22 @@ type KeySpec struct {
 	// the value to EXTERNAL. For more information about importing key material
 	// into KMS, see Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
 	// in the Key Management Service Developer Guide. This value is valid only for
-	// symmetric KMS keys.
+	// symmetric encryption KMS keys.
 	//
 	// To create a KMS key in an KMS custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html)
 	// and create its key material in the associated CloudHSM cluster, set this
 	// value to AWS_CLOUDHSM. You must also use the CustomKeyStoreId parameter to
-	// identify the custom key store. This value is valid only for symmetric KMS
-	// keys.
+	// identify the custom key store. This value is valid only for symmetric encryption
+	// KMS keys.
 	Origin *string `json:"origin,omitempty"`
-	// The key policy to attach to the KMS key.
+	// The key policy to attach to the KMS key. If you do not specify a key policy,
+	// KMS attaches a default key policy to the KMS key. For more information, see
+	// Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default)
+	// in the Key Management Service Developer Guide.
 	//
 	// If you provide a key policy, it must meet the following criteria:
 	//
-	//    * If you don't set BypassPolicyLockoutSafetyCheck to true, the key policy
+	//    * If you don't set BypassPolicyLockoutSafetyCheck to True, the key policy
 	//    must allow the principal that is making the CreateKey request to make
 	//    a subsequent PutKeyPolicy request on the KMS key. This reduces the risk
 	//    that the KMS key becomes unmanageable. For more information, refer to
@@ -169,21 +181,27 @@ type KeySpec struct {
 	//    visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
 	//    in the Amazon Web Services Identity and Access Management User Guide.
 	//
-	// If you do not provide a key policy, KMS attaches a default key policy to
-	// the KMS key. For more information, see Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default)
-	// in the Key Management Service Developer Guide.
+	// A key policy document can include only the following characters:
 	//
-	// The key policy size quota is 32 kilobytes (32768 bytes).
+	//    * Printable ASCII characters from the space character (\u0020) through
+	//    the end of the ASCII character range.
 	//
-	// For help writing and formatting a JSON policy document, see the IAM JSON
-	// Policy Reference (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html)
+	//    * Printable characters in the Basic Latin and Latin-1 Supplement character
+	//    set (through \u00FF).
+	//
+	//    * The tab (\u0009), line feed (\u000A), and carriage return (\u000D) special
+	//    characters
+	//
+	// For information about key policies, see Key policies in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html)
+	// in the Key Management Service Developer Guide. For help writing and formatting
+	// a JSON policy document, see the IAM JSON Policy Reference (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html)
 	// in the Identity and Access Management User Guide .
 	Policy *string `json:"policy,omitempty"`
 	// Assigns one or more tags to the KMS key. Use this parameter to tag the KMS
 	// key when it is created. To tag an existing KMS key, use the TagResource operation.
 	//
 	// Tagging or untagging a KMS key can allow or deny permission to the KMS key.
-	// For details, see Using ABAC in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
+	// For details, see ABAC in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
 	// in the Key Management Service Developer Guide.
 	//
 	// To use this parameter, you must have kms:TagResource (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
@@ -263,10 +281,15 @@ type KeyStatus struct {
 	// The current status of the KMS key.
 	//
 	// For more information about how key state affects the use of a KMS key, see
-	// Key state: Effect on your KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+	// Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
 	// in the Key Management Service Developer Guide.
 	// +kubebuilder:validation:Optional
 	KeyState *string `json:"keyState,omitempty"`
+	// The message authentication code (MAC) algorithm that the HMAC KMS key supports.
+	//
+	// This value is present only when the KeyUsage of the KMS key is GENERATE_VERIFY_MAC.
+	// +kubebuilder:validation:Optional
+	MacAlgorithms []*string `json:"macAlgorithms,omitempty"`
 	// Lists the primary and replica keys in same multi-Region key. This field is
 	// present only when the value of the MultiRegion field is True.
 	//

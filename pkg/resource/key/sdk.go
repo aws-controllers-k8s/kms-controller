@@ -170,41 +170,52 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Spec.KeyUsage = nil
 	}
+	if resp.KeyMetadata.MacAlgorithms != nil {
+		f15 := []*string{}
+		for _, f15iter := range resp.KeyMetadata.MacAlgorithms {
+			var f15elem string
+			f15elem = *f15iter
+			f15 = append(f15, &f15elem)
+		}
+		ko.Status.MacAlgorithms = f15
+	} else {
+		ko.Status.MacAlgorithms = nil
+	}
 	if resp.KeyMetadata.MultiRegion != nil {
 		ko.Spec.MultiRegion = resp.KeyMetadata.MultiRegion
 	} else {
 		ko.Spec.MultiRegion = nil
 	}
 	if resp.KeyMetadata.MultiRegionConfiguration != nil {
-		f16 := &svcapitypes.MultiRegionConfiguration{}
+		f17 := &svcapitypes.MultiRegionConfiguration{}
 		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
-			f16.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+			f17.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
-			f16f1 := &svcapitypes.MultiRegionKey{}
+			f17f1 := &svcapitypes.MultiRegionKey{}
 			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn != nil {
-				f16f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
+				f17f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
 			}
 			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region != nil {
-				f16f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
+				f17f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
 			}
-			f16.PrimaryKey = f16f1
+			f17.PrimaryKey = f17f1
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys != nil {
-			f16f2 := []*svcapitypes.MultiRegionKey{}
-			for _, f16f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
-				f16f2elem := &svcapitypes.MultiRegionKey{}
-				if f16f2iter.Arn != nil {
-					f16f2elem.ARN = f16f2iter.Arn
+			f17f2 := []*svcapitypes.MultiRegionKey{}
+			for _, f17f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
+				f17f2elem := &svcapitypes.MultiRegionKey{}
+				if f17f2iter.Arn != nil {
+					f17f2elem.ARN = f17f2iter.Arn
 				}
-				if f16f2iter.Region != nil {
-					f16f2elem.Region = f16f2iter.Region
+				if f17f2iter.Region != nil {
+					f17f2elem.Region = f17f2iter.Region
 				}
-				f16f2 = append(f16f2, f16f2elem)
+				f17f2 = append(f17f2, f17f2elem)
 			}
-			f16.ReplicaKeys = f16f2
+			f17.ReplicaKeys = f17f2
 		}
-		ko.Status.MultiRegionConfiguration = f16
+		ko.Status.MultiRegionConfiguration = f17
 	} else {
 		ko.Status.MultiRegionConfiguration = nil
 	}
@@ -219,13 +230,13 @@ func (rm *resourceManager) sdkFind(
 		ko.Status.PendingDeletionWindowInDays = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f19 := []*string{}
-		for _, f19iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f19elem string
-			f19elem = *f19iter
-			f19 = append(f19, &f19elem)
+		f20 := []*string{}
+		for _, f20iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f20elem string
+			f20elem = *f20iter
+			f20 = append(f20, &f20elem)
 		}
-		ko.Status.SigningAlgorithms = f19
+		ko.Status.SigningAlgorithms = f20
 	} else {
 		ko.Status.SigningAlgorithms = nil
 	}
@@ -384,41 +395,52 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Spec.KeyUsage = nil
 	}
+	if resp.KeyMetadata.MacAlgorithms != nil {
+		f15 := []*string{}
+		for _, f15iter := range resp.KeyMetadata.MacAlgorithms {
+			var f15elem string
+			f15elem = *f15iter
+			f15 = append(f15, &f15elem)
+		}
+		ko.Status.MacAlgorithms = f15
+	} else {
+		ko.Status.MacAlgorithms = nil
+	}
 	if resp.KeyMetadata.MultiRegion != nil {
 		ko.Spec.MultiRegion = resp.KeyMetadata.MultiRegion
 	} else {
 		ko.Spec.MultiRegion = nil
 	}
 	if resp.KeyMetadata.MultiRegionConfiguration != nil {
-		f16 := &svcapitypes.MultiRegionConfiguration{}
+		f17 := &svcapitypes.MultiRegionConfiguration{}
 		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
-			f16.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+			f17.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
-			f16f1 := &svcapitypes.MultiRegionKey{}
+			f17f1 := &svcapitypes.MultiRegionKey{}
 			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn != nil {
-				f16f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
+				f17f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
 			}
 			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region != nil {
-				f16f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
+				f17f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
 			}
-			f16.PrimaryKey = f16f1
+			f17.PrimaryKey = f17f1
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys != nil {
-			f16f2 := []*svcapitypes.MultiRegionKey{}
-			for _, f16f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
-				f16f2elem := &svcapitypes.MultiRegionKey{}
-				if f16f2iter.Arn != nil {
-					f16f2elem.ARN = f16f2iter.Arn
+			f17f2 := []*svcapitypes.MultiRegionKey{}
+			for _, f17f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
+				f17f2elem := &svcapitypes.MultiRegionKey{}
+				if f17f2iter.Arn != nil {
+					f17f2elem.ARN = f17f2iter.Arn
 				}
-				if f16f2iter.Region != nil {
-					f16f2elem.Region = f16f2iter.Region
+				if f17f2iter.Region != nil {
+					f17f2elem.Region = f17f2iter.Region
 				}
-				f16f2 = append(f16f2, f16f2elem)
+				f17f2 = append(f17f2, f17f2elem)
 			}
-			f16.ReplicaKeys = f16f2
+			f17.ReplicaKeys = f17f2
 		}
-		ko.Status.MultiRegionConfiguration = f16
+		ko.Status.MultiRegionConfiguration = f17
 	} else {
 		ko.Status.MultiRegionConfiguration = nil
 	}
@@ -433,13 +455,13 @@ func (rm *resourceManager) sdkCreate(
 		ko.Status.PendingDeletionWindowInDays = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f19 := []*string{}
-		for _, f19iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f19elem string
-			f19elem = *f19iter
-			f19 = append(f19, &f19elem)
+		f20 := []*string{}
+		for _, f20iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f20elem string
+			f20elem = *f20iter
+			f20 = append(f20, &f20elem)
 		}
-		ko.Status.SigningAlgorithms = f19
+		ko.Status.SigningAlgorithms = f20
 	} else {
 		ko.Status.SigningAlgorithms = nil
 	}
@@ -663,15 +685,6 @@ func (rm *resourceManager) getImmutableFieldChanges(
 	delta *ackcompare.Delta,
 ) []string {
 	var fields []string
-	if delta.DifferentAt("Spec.KeySpec") {
-		fields = append(fields, "KeySpec")
-	}
-	if delta.DifferentAt("Spec.KeyUsage") {
-		fields = append(fields, "KeyUsage")
-	}
-	if delta.DifferentAt("Spec.MultiRegion") {
-		fields = append(fields, "MultiRegion")
-	}
 	if delta.DifferentAt("Spec.Origin") {
 		fields = append(fields, "Origin")
 	}
@@ -680,6 +693,15 @@ func (rm *resourceManager) getImmutableFieldChanges(
 	}
 	if delta.DifferentAt("Spec.Description") {
 		fields = append(fields, "Description")
+	}
+	if delta.DifferentAt("Spec.KeySpec") {
+		fields = append(fields, "KeySpec")
+	}
+	if delta.DifferentAt("Spec.KeyUsage") {
+		fields = append(fields, "KeyUsage")
+	}
+	if delta.DifferentAt("Spec.MultiRegion") {
+		fields = append(fields, "MultiRegion")
 	}
 
 	return fields
