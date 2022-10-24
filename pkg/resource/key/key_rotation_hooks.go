@@ -1,3 +1,16 @@
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License"). You may
+// not use this file except in compliance with the License. A copy of the
+// License is located at
+//
+//     http://aws.amazon.com/apache2.0/
+//
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+// express or implied. See the License for the specific language governing
+// permissions and limitations under the License.
+
 package key
 
 import (
@@ -15,19 +28,27 @@ func (rm *resourceManager) updateKeyRotation(ctx context.Context, r *resource) (
 		exit(err)
 	}()
 
-	if r.ko.Spec.EnableKeyRotation == nil {
-		return nil
-	}
-
 	keyRotationStatus, err := rm.getKeyRotationStatus(r.ko.Status.KeyID)
 	if err != nil {
 		return err
 	}
 
+	// sanity check for response from key rotation status
+	if keyRotationStatus == nil || keyRotationStatus.KeyRotationEnabled == nil {
+		return nil
+	}
+
+	if r.ko.Spec.EnableKeyRotation == nil {
+		// check if current status of key is enabled
+		// if yes, then only disable, or skip and return
+		if *keyRotationStatus.KeyRotationEnabled {
+			return rm.disableKeyRotation(r.ko.Status.KeyID)
+		}
+		return nil
+	}
+
 	// Check if desired state and actual state has any difference
-	if keyRotationStatus != nil &&
-		keyRotationStatus.KeyRotationEnabled != nil &&
-		*keyRotationStatus.KeyRotationEnabled != *r.ko.Spec.EnableKeyRotation {
+	if *keyRotationStatus.KeyRotationEnabled != *r.ko.Spec.EnableKeyRotation {
 		switch *r.ko.Spec.EnableKeyRotation {
 		case true:
 			return rm.enableKeyRotation(r.ko.Status.KeyID)
