@@ -731,6 +731,11 @@ func (in *KeySpec) DeepCopyInto(out *KeySpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EnableKeyRotation != nil {
+		in, out := &in.EnableKeyRotation, &out.EnableKeyRotation
+		*out = new(bool)
+		**out = **in
+	}
 	if in.KeySpec != nil {
 		in, out := &in.KeySpec, &out.KeySpec
 		*out = new(string)

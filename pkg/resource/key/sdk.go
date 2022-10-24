@@ -477,6 +477,10 @@ func (rm *resourceManager) sdkCreate(
 		return &resource{ko}, err
 	}
 	ko.Spec.Policy = policy
+	err = rm.updateKeyRotation(ctx, &resource{ko})
+	if err != nil {
+		return &resource{ko}, err
+	}
 	return &resource{ko}, nil
 }
 
@@ -685,9 +689,6 @@ func (rm *resourceManager) getImmutableFieldChanges(
 	delta *ackcompare.Delta,
 ) []string {
 	var fields []string
-	if delta.DifferentAt("Spec.Origin") {
-		fields = append(fields, "Origin")
-	}
 	if delta.DifferentAt("Spec.CustomKeyStoreID") {
 		fields = append(fields, "CustomKeyStoreID")
 	}
@@ -702,6 +703,9 @@ func (rm *resourceManager) getImmutableFieldChanges(
 	}
 	if delta.DifferentAt("Spec.MultiRegion") {
 		fields = append(fields, "MultiRegion")
+	}
+	if delta.DifferentAt("Spec.Origin") {
+		fields = append(fields, "Origin")
 	}
 
 	return fields

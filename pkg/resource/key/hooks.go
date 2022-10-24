@@ -86,6 +86,12 @@ func (rm *resourceManager) customUpdate(
 			return updatedRes, err
 		}
 	}
+	if delta.DifferentAt("Spec.EnableKeyRotation") {
+		err = rm.updateKeyRotation(ctx, updatedRes)
+		if err != nil {
+			return updatedRes, err
+		}
+	}
 	rm.setStatusDefaults(updatedRes.ko)
 	return updatedRes, nil
 }
