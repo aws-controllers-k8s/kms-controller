@@ -28,7 +28,7 @@ func (rm *resourceManager) updateKeyRotation(ctx context.Context, r *resource) (
 		exit(err)
 	}()
 
-	keyRotationStatus, err := rm.getKeyRotationStatus(r.ko.Status.KeyID)
+	keyRotationStatus, err := rm.getKeyRotationStatus(r)
 	if err != nil {
 		return err
 	}
@@ -61,9 +61,9 @@ func (rm *resourceManager) updateKeyRotation(ctx context.Context, r *resource) (
 }
 
 // get key rotation status at the kms key
-func (rm *resourceManager) getKeyRotationStatus(keyId *string) (*svcsdk.GetKeyRotationStatusOutput, error) {
+func (rm *resourceManager) getKeyRotationStatus(r *resource) (*svcsdk.GetKeyRotationStatusOutput, error) {
 	keyRotationInput := svcsdk.GetKeyRotationStatusInput{
-		KeyId: keyId,
+		KeyId: r.ko.Status.KeyID,
 	}
 	resp, err := rm.sdkapi.GetKeyRotationStatus(&keyRotationInput)
 	rm.metrics.RecordAPICall("GET", "GetKeyRotationStatus", err)
