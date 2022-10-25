@@ -258,7 +258,7 @@ func (rm *resourceManager) sdkFind(
 	}
 	ko.Spec.Tags = FromACKTags(tags)
 	keyRotationStatus, err := rm.getKeyRotationStatus(&resource{ko})
-	if err != nil {
+	if err != nil || keyRotationStatus == nil {
 		return &resource{ko}, err
 	}
 	ko.Spec.EnableKeyRotation = keyRotationStatus.KeyRotationEnabled
@@ -694,9 +694,6 @@ func (rm *resourceManager) getImmutableFieldChanges(
 	delta *ackcompare.Delta,
 ) []string {
 	var fields []string
-	if delta.DifferentAt("Spec.MultiRegion") {
-		fields = append(fields, "MultiRegion")
-	}
 	if delta.DifferentAt("Spec.Origin") {
 		fields = append(fields, "Origin")
 	}
@@ -711,6 +708,9 @@ func (rm *resourceManager) getImmutableFieldChanges(
 	}
 	if delta.DifferentAt("Spec.KeyUsage") {
 		fields = append(fields, "KeyUsage")
+	}
+	if delta.DifferentAt("Spec.MultiRegion") {
+		fields = append(fields, "MultiRegion")
 	}
 
 	return fields

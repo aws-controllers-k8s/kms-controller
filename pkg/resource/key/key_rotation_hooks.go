@@ -80,7 +80,7 @@ func (rm *resourceManager) enableKeyRotation(keyId *string) error {
 		KeyId: keyId,
 	}
 	_, err := rm.sdkapi.EnableKeyRotation(&enableKeyRotationInput)
-	rm.metrics.RecordAPICall("POST", "EnableKeyRotation", err)
+	rm.metrics.RecordAPICall("UPDATE", "EnableKeyRotation", err)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (rm *resourceManager) disableKeyRotation(keyId *string) error {
 		KeyId: keyId,
 	}
 	_, err := rm.sdkapi.DisableKeyRotation(&disableKeyRotationInput)
-	rm.metrics.RecordAPICall("POST", "DisableKeyRotation", err)
+	rm.metrics.RecordAPICall("UPDATE", "DisableKeyRotation", err)
 	if err != nil {
 		return err
 	}

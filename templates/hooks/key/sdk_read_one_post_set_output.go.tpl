@@ -9,7 +9,7 @@
     }
     ko.Spec.Tags = FromACKTags(tags)
     keyRotationStatus, err := rm.getKeyRotationStatus(&resource{ko})
-	if err != nil {
+	if err != nil || keyRotationStatus == nil {
 		return &resource{ko}, err
 	}
 	ko.Spec.EnableKeyRotation = keyRotationStatus.KeyRotationEnabled
