@@ -257,6 +257,11 @@ func (rm *resourceManager) sdkFind(
 		return &resource{ko}, err
 	}
 	ko.Spec.Tags = FromACKTags(tags)
+	keyRotationStatus, err := rm.getKeyRotationStatus(&resource{ko})
+	if err != nil || keyRotationStatus == nil {
+		return &resource{ko}, err
+	}
+	ko.Spec.EnableKeyRotation = keyRotationStatus.KeyRotationEnabled
 	return &resource{ko}, nil
 }
 
@@ -477,6 +482,10 @@ func (rm *resourceManager) sdkCreate(
 		return &resource{ko}, err
 	}
 	ko.Spec.Policy = policy
+	err = rm.updateKeyRotation(ctx, &resource{ko})
+	if err != nil {
+		return &resource{ko}, err
+	}
 	return &resource{ko}, nil
 }
 

@@ -62,6 +62,8 @@ type KeySpec struct {
 	//
 	// To set or change the description after the key is created, use UpdateKeyDescription.
 	Description *string `json:"description,omitempty"`
+
+	EnableKeyRotation *bool `json:"enableKeyRotation,omitempty"`
 	// Specifies the type of KMS key to create. The default value, SYMMETRIC_DEFAULT,
 	// creates a KMS key with a 256-bit AES-GCM key that is used for encryption
 	// and decryption, except in China Regions, where it creates a 128-bit symmetric

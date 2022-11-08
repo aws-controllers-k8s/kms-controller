@@ -43,6 +43,8 @@ resources:
         is_immutable: true
       CustomKeyStoreID:
         is_immutable: true
+      EnableKeyRotation:
+        type: bool
     hooks:
       sdk_delete_post_build_request:
         template_path: hooks/key/sdk_delete_post_build_request.go.tpl

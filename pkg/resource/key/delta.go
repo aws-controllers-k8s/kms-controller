@@ -62,6 +62,13 @@ func newResourceDelta(
 			delta.Add("Spec.Description", a.ko.Spec.Description, b.ko.Spec.Description)
 		}
 	}
+	if ackcompare.HasNilDifference(a.ko.Spec.EnableKeyRotation, b.ko.Spec.EnableKeyRotation) {
+		delta.Add("Spec.EnableKeyRotation", a.ko.Spec.EnableKeyRotation, b.ko.Spec.EnableKeyRotation)
+	} else if a.ko.Spec.EnableKeyRotation != nil && b.ko.Spec.EnableKeyRotation != nil {
+		if *a.ko.Spec.EnableKeyRotation != *b.ko.Spec.EnableKeyRotation {
+			delta.Add("Spec.EnableKeyRotation", a.ko.Spec.EnableKeyRotation, b.ko.Spec.EnableKeyRotation)
+		}
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.KeySpec, b.ko.Spec.KeySpec) {
 		delta.Add("Spec.KeySpec", a.ko.Spec.KeySpec, b.ko.Spec.KeySpec)
 	} else if a.ko.Spec.KeySpec != nil && b.ko.Spec.KeySpec != nil {

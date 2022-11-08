@@ -142,11 +142,46 @@ def key_with_policy():
     )
     k8s.create_custom_resource(ref, resource_data)
     cr = k8s.wait_resource_consumed_by_controller(ref)
-
+ 
     assert cr is not None
     assert k8s.get_resource_exists(ref)
 
     yield (ref, cr, key_policy)
+
+    # Try to delete, if doesn't already exist
+    try:
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
+        assert deleted
+    except:
+        pass
+
+@pytest.fixture
+def key_with_rotation():
+    key_name = random_suffix_name("key-w-rotation", 32)
+    key_description = 'Used for ACK key_with_rotation testing'
+
+    replacements = REPLACEMENT_VALUES.copy()
+    replacements["KEY_NAME"] = key_name
+    replacements["DESCRIPTION"] = key_description
+
+    resource_data = load_kms_resource(
+        "key_with_rotation",
+        additional_replacements=replacements,
+    )
+    logging.debug(resource_data)
+
+    # Create the k8s resource
+    ref = k8s.CustomResourceReference(
+        CRD_GROUP, CRD_VERSION, KEY_RESOURCE_PLURAL,
+        key_name, namespace="default",
+    )
+    k8s.create_custom_resource(ref, resource_data)
+    cr = k8s.wait_resource_consumed_by_controller(ref)
+
+    assert cr is not None
+    assert k8s.get_resource_exists(ref)
+
+    yield (ref, cr)
 
     # Try to delete, if doesn't already exist
     try:
@@ -221,6 +256,19 @@ class TestKey:
         k8s.patch_custom_resource(ref, updates)
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
         assert k8s.wait_on_condition(ref, "ACK.Terminal", "True", wait_periods=10)
+    
+    def test_create_with_rotation(self, kms_client, key_with_rotation):
+        (ref, cr) = key_with_rotation
+
+        assert 'keyID' in cr['status']
+        key_id = cr['status']['keyID']
+
+        # check for key rotation status
+        response = kms_client.get_key_rotation_status(KeyId=key_id)
+        assert response['KeyRotationEnabled'] == True
+
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
+        assert deleted
 
     def test_update_tags(self, kms_client, simple_key):
         (ref, cr) = simple_key
