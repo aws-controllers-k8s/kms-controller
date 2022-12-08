@@ -36,10 +36,12 @@ func ToACKTags(tags []*svcapitypes.Tag) acktags.Tags {
 	}
 
 	for _, t := range tags {
-		if t.TagValue == nil {
-			result[*t.TagKey] = ""
-		} else {
-			result[*t.TagKey] = *t.TagValue
+		if t.TagKey != nil {
+			if t.TagValue == nil {
+				result[*t.TagKey] = ""
+			} else {
+				result[*t.TagKey] = *t.TagValue
+			}
 		}
 	}
 
