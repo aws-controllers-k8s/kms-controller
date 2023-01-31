@@ -22,6 +22,7 @@ import (
 
 // KeySpec defines the desired state of Key.
 type KeySpec struct {
+
 	// A flag to indicate whether to bypass the key policy lockout safety check.
 	//
 	// Setting this value to true increases the risk that the KMS key becomes unmanageable.
@@ -61,9 +62,8 @@ type KeySpec struct {
 	// for a task. The default value is an empty string (no description).
 	//
 	// To set or change the description after the key is created, use UpdateKeyDescription.
-	Description *string `json:"description,omitempty"`
-
-	EnableKeyRotation *bool `json:"enableKeyRotation,omitempty"`
+	Description       *string `json:"description,omitempty"`
+	EnableKeyRotation *bool   `json:"enableKeyRotation,omitempty"`
 	// Specifies the type of KMS key to create. The default value, SYMMETRIC_DEFAULT,
 	// creates a KMS key with a 256-bit AES-GCM key that is used for encryption
 	// and decryption, except in China Regions, where it creates a 128-bit symmetric
@@ -87,19 +87,19 @@ type KeySpec struct {
 	//
 	// KMS supports the following key specs for KMS keys:
 	//
-	//    * Symmetric encryption key (default) SYMMETRIC_DEFAULT
+	//   - Symmetric encryption key (default) SYMMETRIC_DEFAULT
 	//
-	//    * HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
+	//   - HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
 	//
-	//    * Asymmetric RSA key pairs RSA_2048 RSA_3072 RSA_4096
+	//   - Asymmetric RSA key pairs RSA_2048 RSA_3072 RSA_4096
 	//
-	//    * Asymmetric NIST-recommended elliptic curve key pairs ECC_NIST_P256 (secp256r1)
-	//    ECC_NIST_P384 (secp384r1) ECC_NIST_P521 (secp521r1)
+	//   - Asymmetric NIST-recommended elliptic curve key pairs ECC_NIST_P256 (secp256r1)
+	//     ECC_NIST_P384 (secp384r1) ECC_NIST_P521 (secp521r1)
 	//
-	//    * Other asymmetric elliptic curve key pairs ECC_SECG_P256K1 (secp256k1),
-	//    commonly used for cryptocurrencies.
+	//   - Other asymmetric elliptic curve key pairs ECC_SECG_P256K1 (secp256k1),
+	//     commonly used for cryptocurrencies.
 	//
-	//    * SM2 key pairs (China Regions only) SM2
+	//   - SM2 key pairs (China Regions only) SM2
 	KeySpec *string `json:"keySpec,omitempty"`
 	// Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
 	// for which you can use the KMS key. The default value is ENCRYPT_DECRYPT.
@@ -109,17 +109,17 @@ type KeySpec struct {
 	//
 	// Select only one valid value.
 	//
-	//    * For symmetric encryption KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
+	//   - For symmetric encryption KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
 	//
-	//    * For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
+	//   - For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
 	//
-	//    * For asymmetric KMS keys with RSA key material, specify ENCRYPT_DECRYPT
-	//    or SIGN_VERIFY.
+	//   - For asymmetric KMS keys with RSA key material, specify ENCRYPT_DECRYPT
+	//     or SIGN_VERIFY.
 	//
-	//    * For asymmetric KMS keys with ECC key material, specify SIGN_VERIFY.
+	//   - For asymmetric KMS keys with ECC key material, specify SIGN_VERIFY.
 	//
-	//    * For asymmetric KMS keys with SM2 key material (China Regions only),
-	//    specify ENCRYPT_DECRYPT or SIGN_VERIFY.
+	//   - For asymmetric KMS keys with SM2 key material (China Regions only),
+	//     specify ENCRYPT_DECRYPT or SIGN_VERIFY.
 	KeyUsage *string `json:"keyUsage,omitempty"`
 	// Creates a multi-Region primary key that you can replicate into other Amazon
 	// Web Services Regions. You cannot change this value after you create the KMS
@@ -167,32 +167,32 @@ type KeySpec struct {
 	//
 	// If you provide a key policy, it must meet the following criteria:
 	//
-	//    * If you don't set BypassPolicyLockoutSafetyCheck to True, the key policy
-	//    must allow the principal that is making the CreateKey request to make
-	//    a subsequent PutKeyPolicy request on the KMS key. This reduces the risk
-	//    that the KMS key becomes unmanageable. For more information, refer to
-	//    the scenario in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
-	//    section of the Key Management Service Developer Guide .
+	//   - If you don't set BypassPolicyLockoutSafetyCheck to True, the key policy
+	//     must allow the principal that is making the CreateKey request to make
+	//     a subsequent PutKeyPolicy request on the KMS key. This reduces the risk
+	//     that the KMS key becomes unmanageable. For more information, refer to
+	//     the scenario in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
+	//     section of the Key Management Service Developer Guide .
 	//
-	//    * Each statement in the key policy must contain one or more principals.
-	//    The principals in the key policy must exist and be visible to KMS. When
-	//    you create a new Amazon Web Services principal (for example, an IAM user
-	//    or role), you might need to enforce a delay before including the new principal
-	//    in a key policy because the new principal might not be immediately visible
-	//    to KMS. For more information, see Changes that I make are not always immediately
-	//    visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
-	//    in the Amazon Web Services Identity and Access Management User Guide.
+	//   - Each statement in the key policy must contain one or more principals.
+	//     The principals in the key policy must exist and be visible to KMS. When
+	//     you create a new Amazon Web Services principal (for example, an IAM user
+	//     or role), you might need to enforce a delay before including the new principal
+	//     in a key policy because the new principal might not be immediately visible
+	//     to KMS. For more information, see Changes that I make are not always immediately
+	//     visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
+	//     in the Amazon Web Services Identity and Access Management User Guide.
 	//
 	// A key policy document can include only the following characters:
 	//
-	//    * Printable ASCII characters from the space character (\u0020) through
-	//    the end of the ASCII character range.
+	//   - Printable ASCII characters from the space character (\u0020) through
+	//     the end of the ASCII character range.
 	//
-	//    * Printable characters in the Basic Latin and Latin-1 Supplement character
-	//    set (through \u00FF).
+	//   - Printable characters in the Basic Latin and Latin-1 Supplement character
+	//     set (through \u00FF).
 	//
-	//    * The tab (\u0009), line feed (\u000A), and carriage return (\u000D) special
-	//    characters
+	//   - The tab (\u0009), line feed (\u000A), and carriage return (\u000D) special
+	//     characters
 	//
 	// For information about key policies, see Key policies in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html)
 	// in the Key Management Service Developer Guide. For help writing and formatting
