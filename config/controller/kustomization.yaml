@@ -6,4 +6,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: public.ecr.aws/aws-controllers-k8s/kms-controller
-  newTag: v0.1.5
+  newTag: v1.0.0
