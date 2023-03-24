@@ -1,8 +1,9 @@
 resources:
   Alias:
     fields:
-      TargetKeyId:
+      Name:
         is_primary_key: true
+      TargetKeyId:
         is_required: true
         from:
           operation: CreateAlias
