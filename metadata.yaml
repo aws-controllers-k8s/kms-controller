@@ -2,7 +2,7 @@ service:
   full_name: "AWS Key Management Service"
   short_name: "KMS"
   link: "https://aws.amazon.com/kms/"
-  documentation: "https://docs.aws.amazon.com/kms/latest/developerguide/index.html"
+  documentation: "https://docs.aws.amazon.com/kms/latest/developerguide/overview.html"
 api_versions:
   - api_version: v1alpha1
     status: available
