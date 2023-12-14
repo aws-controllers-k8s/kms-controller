@@ -46,23 +46,27 @@ func newResourceDelta(
 	if ackcompare.HasNilDifference(a.ko.Spec.Constraints, b.ko.Spec.Constraints) {
 		delta.Add("Spec.Constraints", a.ko.Spec.Constraints, b.ko.Spec.Constraints)
 	} else if a.ko.Spec.Constraints != nil && b.ko.Spec.Constraints != nil {
-		if ackcompare.HasNilDifference(a.ko.Spec.Constraints.EncryptionContextEquals, b.ko.Spec.Constraints.EncryptionContextEquals) {
+		if len(a.ko.Spec.Constraints.EncryptionContextEquals) != len(b.ko.Spec.Constraints.EncryptionContextEquals) {
 			delta.Add("Spec.Constraints.EncryptionContextEquals", a.ko.Spec.Constraints.EncryptionContextEquals, b.ko.Spec.Constraints.EncryptionContextEquals)
-		} else if a.ko.Spec.Constraints.EncryptionContextEquals != nil && b.ko.Spec.Constraints.EncryptionContextEquals != nil {
+		} else if len(a.ko.Spec.Constraints.EncryptionContextEquals) > 0 {
 			if !ackcompare.MapStringStringPEqual(a.ko.Spec.Constraints.EncryptionContextEquals, b.ko.Spec.Constraints.EncryptionContextEquals) {
 				delta.Add("Spec.Constraints.EncryptionContextEquals", a.ko.Spec.Constraints.EncryptionContextEquals, b.ko.Spec.Constraints.EncryptionContextEquals)
 			}
 		}
-		if ackcompare.HasNilDifference(a.ko.Spec.Constraints.EncryptionContextSubset, b.ko.Spec.Constraints.EncryptionContextSubset) {
+		if len(a.ko.Spec.Constraints.EncryptionContextSubset) != len(b.ko.Spec.Constraints.EncryptionContextSubset) {
 			delta.Add("Spec.Constraints.EncryptionContextSubset", a.ko.Spec.Constraints.EncryptionContextSubset, b.ko.Spec.Constraints.EncryptionContextSubset)
-		} else if a.ko.Spec.Constraints.EncryptionContextSubset != nil && b.ko.Spec.Constraints.EncryptionContextSubset != nil {
+		} else if len(a.ko.Spec.Constraints.EncryptionContextSubset) > 0 {
 			if !ackcompare.MapStringStringPEqual(a.ko.Spec.Constraints.EncryptionContextSubset, b.ko.Spec.Constraints.EncryptionContextSubset) {
 				delta.Add("Spec.Constraints.EncryptionContextSubset", a.ko.Spec.Constraints.EncryptionContextSubset, b.ko.Spec.Constraints.EncryptionContextSubset)
 			}
 		}
 	}
-	if !ackcompare.SliceStringPEqual(a.ko.Spec.GrantTokens, b.ko.Spec.GrantTokens) {
+	if len(a.ko.Spec.GrantTokens) != len(b.ko.Spec.GrantTokens) {
 		delta.Add("Spec.GrantTokens", a.ko.Spec.GrantTokens, b.ko.Spec.GrantTokens)
+	} else if len(a.ko.Spec.GrantTokens) > 0 {
+		if !ackcompare.SliceStringPEqual(a.ko.Spec.GrantTokens, b.ko.Spec.GrantTokens) {
+			delta.Add("Spec.GrantTokens", a.ko.Spec.GrantTokens, b.ko.Spec.GrantTokens)
+		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.GranteePrincipal, b.ko.Spec.GranteePrincipal) {
 		delta.Add("Spec.GranteePrincipal", a.ko.Spec.GranteePrincipal, b.ko.Spec.GranteePrincipal)
@@ -88,8 +92,12 @@ func newResourceDelta(
 			delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
 		}
 	}
-	if !ackcompare.SliceStringPEqual(a.ko.Spec.Operations, b.ko.Spec.Operations) {
+	if len(a.ko.Spec.Operations) != len(b.ko.Spec.Operations) {
 		delta.Add("Spec.Operations", a.ko.Spec.Operations, b.ko.Spec.Operations)
+	} else if len(a.ko.Spec.Operations) > 0 {
+		if !ackcompare.SliceStringPEqual(a.ko.Spec.Operations, b.ko.Spec.Operations) {
+			delta.Add("Spec.Operations", a.ko.Spec.Operations, b.ko.Spec.Operations)
+		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.RetiringPrincipal, b.ko.Spec.RetiringPrincipal) {
 		delta.Add("Spec.RetiringPrincipal", a.ko.Spec.RetiringPrincipal, b.ko.Spec.RetiringPrincipal)
