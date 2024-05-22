@@ -16,7 +16,8 @@
                 "kms:UntagResource",
                 "iam:ListGroups",
                 "iam:ListRoles",
-                "iam:ListUsers"
+                "iam:ListUsers",
+                "iam:CreateServiceLinkedRole"
             ],
             "Resource": "*"
         }
