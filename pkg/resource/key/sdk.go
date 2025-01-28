@@ -28,8 +28,10 @@ import (
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/kms"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
+	smithy "github.com/aws/smithy-go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -40,8 +42,7 @@ import (
 var (
 	_ = &metav1.Time{}
 	_ = strings.ToLower("")
-	_ = &aws.JSONValue{}
-	_ = &svcsdk.KMS{}
+	_ = &svcsdk.Client{}
 	_ = &svcapitypes.Key{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
@@ -49,6 +50,7 @@ var (
 	_ = &reflect.Value{}
 	_ = fmt.Sprintf("")
 	_ = &ackrequeue.NoRequeue{}
+	_ = &aws.Config{}
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
@@ -74,13 +76,11 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	var resp *svcsdk.DescribeKeyOutput
-	resp, err = rm.sdkapi.DescribeKeyWithContext(ctx, input)
+	resp, err = rm.sdkapi.DescribeKey(ctx, input)
 	rm.metrics.RecordAPICall("READ_ONE", "DescribeKey", err)
 	if err != nil {
-		if reqErr, ok := ackerr.AWSRequestFailure(err); ok && reqErr.StatusCode() == 404 {
-			return nil, ackerr.NotFound
-		}
-		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
+		var awsErr smithy.APIError
+		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "NotFound" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -127,24 +127,20 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Spec.Description = nil
 	}
-	if resp.KeyMetadata.Enabled != nil {
-		ko.Status.Enabled = resp.KeyMetadata.Enabled
-	} else {
-		ko.Status.Enabled = nil
-	}
+	ko.Status.Enabled = &resp.KeyMetadata.Enabled
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
 		f8 := []*string{}
 		for _, f8iter := range resp.KeyMetadata.EncryptionAlgorithms {
-			var f8elem string
-			f8elem = *f8iter
-			f8 = append(f8, &f8elem)
+			var f8elem *string
+			f8elem = aws.String(string(f8iter))
+			f8 = append(f8, f8elem)
 		}
 		ko.Status.EncryptionAlgorithms = f8
 	} else {
 		ko.Status.EncryptionAlgorithms = nil
 	}
-	if resp.KeyMetadata.ExpirationModel != nil {
-		ko.Status.ExpirationModel = resp.KeyMetadata.ExpirationModel
+	if resp.KeyMetadata.ExpirationModel != "" {
+		ko.Status.ExpirationModel = aws.String(string(resp.KeyMetadata.ExpirationModel))
 	} else {
 		ko.Status.ExpirationModel = nil
 	}
@@ -153,32 +149,32 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Status.KeyID = nil
 	}
-	if resp.KeyMetadata.KeyManager != nil {
-		ko.Status.KeyManager = resp.KeyMetadata.KeyManager
+	if resp.KeyMetadata.KeyManager != "" {
+		ko.Status.KeyManager = aws.String(string(resp.KeyMetadata.KeyManager))
 	} else {
 		ko.Status.KeyManager = nil
 	}
-	if resp.KeyMetadata.KeySpec != nil {
-		ko.Spec.KeySpec = resp.KeyMetadata.KeySpec
+	if resp.KeyMetadata.KeySpec != "" {
+		ko.Spec.KeySpec = aws.String(string(resp.KeyMetadata.KeySpec))
 	} else {
 		ko.Spec.KeySpec = nil
 	}
-	if resp.KeyMetadata.KeyState != nil {
-		ko.Status.KeyState = resp.KeyMetadata.KeyState
+	if resp.KeyMetadata.KeyState != "" {
+		ko.Status.KeyState = aws.String(string(resp.KeyMetadata.KeyState))
 	} else {
 		ko.Status.KeyState = nil
 	}
-	if resp.KeyMetadata.KeyUsage != nil {
-		ko.Spec.KeyUsage = resp.KeyMetadata.KeyUsage
+	if resp.KeyMetadata.KeyUsage != "" {
+		ko.Spec.KeyUsage = aws.String(string(resp.KeyMetadata.KeyUsage))
 	} else {
 		ko.Spec.KeyUsage = nil
 	}
 	if resp.KeyMetadata.MacAlgorithms != nil {
 		f15 := []*string{}
 		for _, f15iter := range resp.KeyMetadata.MacAlgorithms {
-			var f15elem string
-			f15elem = *f15iter
-			f15 = append(f15, &f15elem)
+			var f15elem *string
+			f15elem = aws.String(string(f15iter))
+			f15 = append(f15, f15elem)
 		}
 		ko.Status.MacAlgorithms = f15
 	} else {
@@ -191,8 +187,8 @@ func (rm *resourceManager) sdkFind(
 	}
 	if resp.KeyMetadata.MultiRegionConfiguration != nil {
 		f17 := &svcapitypes.MultiRegionConfiguration{}
-		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
-			f17.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != "" {
+			f17.MultiRegionKeyType = aws.String(string(resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType))
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
 			f17f1 := &svcapitypes.MultiRegionKey{}
@@ -222,22 +218,23 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Status.MultiRegionConfiguration = nil
 	}
-	if resp.KeyMetadata.Origin != nil {
-		ko.Spec.Origin = resp.KeyMetadata.Origin
+	if resp.KeyMetadata.Origin != "" {
+		ko.Spec.Origin = aws.String(string(resp.KeyMetadata.Origin))
 	} else {
 		ko.Spec.Origin = nil
 	}
 	if resp.KeyMetadata.PendingDeletionWindowInDays != nil {
-		ko.Status.PendingDeletionWindowInDays = resp.KeyMetadata.PendingDeletionWindowInDays
+		pendingDeletionWindowInDaysCopy := int64(*resp.KeyMetadata.PendingDeletionWindowInDays)
+		ko.Status.PendingDeletionWindowInDays = &pendingDeletionWindowInDaysCopy
 	} else {
 		ko.Status.PendingDeletionWindowInDays = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
 		f20 := []*string{}
 		for _, f20iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f20elem string
-			f20elem = *f20iter
-			f20 = append(f20, &f20elem)
+			var f20elem *string
+			f20elem = aws.String(string(f20iter))
+			f20 = append(f20, f20elem)
 		}
 		ko.Status.SigningAlgorithms = f20
 	} else {
@@ -260,11 +257,12 @@ func (rm *resourceManager) sdkFind(
 		return &resource{ko}, err
 	}
 	ko.Spec.Tags = FromACKTags(tags)
-	keyRotationStatus, err := rm.getKeyRotationStatus(&resource{ko})
+	keyRotationStatus, err := rm.getKeyRotationStatus(ctx, &resource{ko})
 	if err != nil || keyRotationStatus == nil {
 		return &resource{ko}, err
 	}
-	ko.Spec.EnableKeyRotation = keyRotationStatus.KeyRotationEnabled
+	enabled := keyRotationStatus.KeyRotationEnabled
+	ko.Spec.EnableKeyRotation = &enabled
 	return &resource{ko}, nil
 }
 
@@ -286,7 +284,7 @@ func (rm *resourceManager) newDescribeRequestPayload(
 	res := &svcsdk.DescribeKeyInput{}
 
 	if r.ko.Status.KeyID != nil {
-		res.SetKeyId(*r.ko.Status.KeyID)
+		res.KeyId = r.ko.Status.KeyID
 	}
 
 	return res, nil
@@ -311,7 +309,7 @@ func (rm *resourceManager) sdkCreate(
 
 	var resp *svcsdk.CreateKeyOutput
 	_ = resp
-	resp, err = rm.sdkapi.CreateKeyWithContext(ctx, input)
+	resp, err = rm.sdkapi.CreateKey(ctx, input)
 	rm.metrics.RecordAPICall("CREATE", "CreateKey", err)
 	if err != nil {
 		return nil, err
@@ -357,24 +355,20 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Spec.Description = nil
 	}
-	if resp.KeyMetadata.Enabled != nil {
-		ko.Status.Enabled = resp.KeyMetadata.Enabled
-	} else {
-		ko.Status.Enabled = nil
-	}
+	ko.Status.Enabled = &resp.KeyMetadata.Enabled
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
 		f8 := []*string{}
 		for _, f8iter := range resp.KeyMetadata.EncryptionAlgorithms {
-			var f8elem string
-			f8elem = *f8iter
-			f8 = append(f8, &f8elem)
+			var f8elem *string
+			f8elem = aws.String(string(f8iter))
+			f8 = append(f8, f8elem)
 		}
 		ko.Status.EncryptionAlgorithms = f8
 	} else {
 		ko.Status.EncryptionAlgorithms = nil
 	}
-	if resp.KeyMetadata.ExpirationModel != nil {
-		ko.Status.ExpirationModel = resp.KeyMetadata.ExpirationModel
+	if resp.KeyMetadata.ExpirationModel != "" {
+		ko.Status.ExpirationModel = aws.String(string(resp.KeyMetadata.ExpirationModel))
 	} else {
 		ko.Status.ExpirationModel = nil
 	}
@@ -383,32 +377,32 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.KeyID = nil
 	}
-	if resp.KeyMetadata.KeyManager != nil {
-		ko.Status.KeyManager = resp.KeyMetadata.KeyManager
+	if resp.KeyMetadata.KeyManager != "" {
+		ko.Status.KeyManager = aws.String(string(resp.KeyMetadata.KeyManager))
 	} else {
 		ko.Status.KeyManager = nil
 	}
-	if resp.KeyMetadata.KeySpec != nil {
-		ko.Spec.KeySpec = resp.KeyMetadata.KeySpec
+	if resp.KeyMetadata.KeySpec != "" {
+		ko.Spec.KeySpec = aws.String(string(resp.KeyMetadata.KeySpec))
 	} else {
 		ko.Spec.KeySpec = nil
 	}
-	if resp.KeyMetadata.KeyState != nil {
-		ko.Status.KeyState = resp.KeyMetadata.KeyState
+	if resp.KeyMetadata.KeyState != "" {
+		ko.Status.KeyState = aws.String(string(resp.KeyMetadata.KeyState))
 	} else {
 		ko.Status.KeyState = nil
 	}
-	if resp.KeyMetadata.KeyUsage != nil {
-		ko.Spec.KeyUsage = resp.KeyMetadata.KeyUsage
+	if resp.KeyMetadata.KeyUsage != "" {
+		ko.Spec.KeyUsage = aws.String(string(resp.KeyMetadata.KeyUsage))
 	} else {
 		ko.Spec.KeyUsage = nil
 	}
 	if resp.KeyMetadata.MacAlgorithms != nil {
 		f15 := []*string{}
 		for _, f15iter := range resp.KeyMetadata.MacAlgorithms {
-			var f15elem string
-			f15elem = *f15iter
-			f15 = append(f15, &f15elem)
+			var f15elem *string
+			f15elem = aws.String(string(f15iter))
+			f15 = append(f15, f15elem)
 		}
 		ko.Status.MacAlgorithms = f15
 	} else {
@@ -421,8 +415,8 @@ func (rm *resourceManager) sdkCreate(
 	}
 	if resp.KeyMetadata.MultiRegionConfiguration != nil {
 		f17 := &svcapitypes.MultiRegionConfiguration{}
-		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
-			f17.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != "" {
+			f17.MultiRegionKeyType = aws.String(string(resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType))
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
 			f17f1 := &svcapitypes.MultiRegionKey{}
@@ -452,22 +446,23 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.MultiRegionConfiguration = nil
 	}
-	if resp.KeyMetadata.Origin != nil {
-		ko.Spec.Origin = resp.KeyMetadata.Origin
+	if resp.KeyMetadata.Origin != "" {
+		ko.Spec.Origin = aws.String(string(resp.KeyMetadata.Origin))
 	} else {
 		ko.Spec.Origin = nil
 	}
 	if resp.KeyMetadata.PendingDeletionWindowInDays != nil {
-		ko.Status.PendingDeletionWindowInDays = resp.KeyMetadata.PendingDeletionWindowInDays
+		pendingDeletionWindowInDaysCopy := int64(*resp.KeyMetadata.PendingDeletionWindowInDays)
+		ko.Status.PendingDeletionWindowInDays = &pendingDeletionWindowInDaysCopy
 	} else {
 		ko.Status.PendingDeletionWindowInDays = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
 		f20 := []*string{}
 		for _, f20iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f20elem string
-			f20elem = *f20iter
-			f20 = append(f20, &f20elem)
+			var f20elem *string
+			f20elem = aws.String(string(f20iter))
+			f20 = append(f20, f20elem)
 		}
 		ko.Status.SigningAlgorithms = f20
 	} else {
@@ -501,42 +496,42 @@ func (rm *resourceManager) newCreateRequestPayload(
 	res := &svcsdk.CreateKeyInput{}
 
 	if r.ko.Spec.BypassPolicyLockoutSafetyCheck != nil {
-		res.SetBypassPolicyLockoutSafetyCheck(*r.ko.Spec.BypassPolicyLockoutSafetyCheck)
+		res.BypassPolicyLockoutSafetyCheck = *r.ko.Spec.BypassPolicyLockoutSafetyCheck
 	}
 	if r.ko.Spec.CustomKeyStoreID != nil {
-		res.SetCustomKeyStoreId(*r.ko.Spec.CustomKeyStoreID)
+		res.CustomKeyStoreId = r.ko.Spec.CustomKeyStoreID
 	}
 	if r.ko.Spec.Description != nil {
-		res.SetDescription(*r.ko.Spec.Description)
+		res.Description = r.ko.Spec.Description
 	}
 	if r.ko.Spec.KeySpec != nil {
-		res.SetKeySpec(*r.ko.Spec.KeySpec)
+		res.KeySpec = svcsdktypes.KeySpec(*r.ko.Spec.KeySpec)
 	}
 	if r.ko.Spec.KeyUsage != nil {
-		res.SetKeyUsage(*r.ko.Spec.KeyUsage)
+		res.KeyUsage = svcsdktypes.KeyUsageType(*r.ko.Spec.KeyUsage)
 	}
 	if r.ko.Spec.MultiRegion != nil {
-		res.SetMultiRegion(*r.ko.Spec.MultiRegion)
+		res.MultiRegion = r.ko.Spec.MultiRegion
 	}
 	if r.ko.Spec.Origin != nil {
-		res.SetOrigin(*r.ko.Spec.Origin)
+		res.Origin = svcsdktypes.OriginType(*r.ko.Spec.Origin)
 	}
 	if r.ko.Spec.Policy != nil {
-		res.SetPolicy(*r.ko.Spec.Policy)
+		res.Policy = r.ko.Spec.Policy
 	}
 	if r.ko.Spec.Tags != nil {
-		f8 := []*svcsdk.Tag{}
+		f8 := []svcsdktypes.Tag{}
 		for _, f8iter := range r.ko.Spec.Tags {
-			f8elem := &svcsdk.Tag{}
+			f8elem := &svcsdktypes.Tag{}
 			if f8iter.TagKey != nil {
-				f8elem.SetTagKey(*f8iter.TagKey)
+				f8elem.TagKey = f8iter.TagKey
 			}
 			if f8iter.TagValue != nil {
-				f8elem.SetTagValue(*f8iter.TagValue)
+				f8elem.TagValue = f8iter.TagValue
 			}
-			f8 = append(f8, f8elem)
+			f8 = append(f8, *f8elem)
 		}
-		res.SetTags(f8)
+		res.Tags = f8
 	}
 
 	return res, nil
@@ -567,10 +562,10 @@ func (rm *resourceManager) sdkDelete(
 	if err != nil {
 		return nil, err
 	}
-	input.SetPendingWindowInDays(GetDeletePendingWindowInDays(&r.ko.ObjectMeta))
+	input.PendingWindowInDays = aws.Int32(int32(GetDeletePendingWindowInDays(&r.ko.ObjectMeta)))
 	var resp *svcsdk.ScheduleKeyDeletionOutput
 	_ = resp
-	resp, err = rm.sdkapi.ScheduleKeyDeletionWithContext(ctx, input)
+	resp, err = rm.sdkapi.ScheduleKeyDeletion(ctx, input)
 	rm.metrics.RecordAPICall("DELETE", "ScheduleKeyDeletion", err)
 	return nil, err
 }
@@ -583,7 +578,7 @@ func (rm *resourceManager) newDeleteRequestPayload(
 	res := &svcsdk.ScheduleKeyDeletionInput{}
 
 	if r.ko.Status.KeyID != nil {
-		res.SetKeyId(*r.ko.Status.KeyID)
+		res.KeyId = r.ko.Status.KeyID
 	}
 
 	return res, nil

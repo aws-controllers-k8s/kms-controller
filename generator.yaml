@@ -22,9 +22,6 @@ resources:
         DeleteAlias:
           input_fields:
             AliasName: Name
-    exceptions:
-      terminal_codes:
-        - ValidationException
     hooks:
       sdk_read_many_pre_set_output:
         template_path: hooks/alias/sdk_read_many_pre_set_output.go.tpl
@@ -82,4 +79,8 @@ ignore:
     - CustomKeyStore
   field_paths:
     - CreateKeyInput.CustomerMasterKeySpec
+    - CreateKeyInput.XksKeyId
     - KeyMetadata.CustomerMasterKeySpec
+    - KeyMetadata.KeyAgreementAlgorithms
+    - KeyMetadata.XksKeyConfiguration
+    - CreateGrantInput.DryRun

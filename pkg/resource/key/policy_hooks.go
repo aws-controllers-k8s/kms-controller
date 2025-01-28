@@ -17,7 +17,7 @@ import (
 	"context"
 
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	svcsdk "github.com/aws/aws-sdk-go/service/kms"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/kms"
 )
 
 var (
@@ -36,13 +36,13 @@ func (rm *resourceManager) updatePolicy(ctx context.Context, r *resource) (err e
 	}()
 
 	input := &svcsdk.PutKeyPolicyInput{
-		BypassPolicyLockoutSafetyCheck: r.ko.Spec.BypassPolicyLockoutSafetyCheck,
+		BypassPolicyLockoutSafetyCheck: r.ko.Spec.BypassPolicyLockoutSafetyCheck != nil && *r.ko.Spec.BypassPolicyLockoutSafetyCheck,
 		KeyId:                          r.ko.Status.KeyID,
 		Policy:                         r.ko.Spec.Policy,
 		PolicyName:                     &PolicyName,
 	}
 
-	_, err = rm.sdkapi.PutKeyPolicyWithContext(ctx, input)
+	_, err = rm.sdkapi.PutKeyPolicy(ctx, input)
 	rm.metrics.RecordAPICall("UPDATE", "PutKeyPolicy", err)
 	return err
 }
@@ -58,7 +58,7 @@ func (rm *resourceManager) getPolicy(ctx context.Context, r *resource) (policy *
 		KeyId:      r.ko.Status.KeyID,
 		PolicyName: &PolicyName,
 	}
-	resp, err := rm.sdkapi.GetKeyPolicyWithContext(ctx, input)
+	resp, err := rm.sdkapi.GetKeyPolicy(ctx, input)
 	rm.metrics.RecordAPICall("GET", "GetKeyPolicy", err)
 	if err != nil {
 		return nil, err
