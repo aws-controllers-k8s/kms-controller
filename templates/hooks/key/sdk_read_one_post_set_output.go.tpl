@@ -12,4 +12,5 @@
 	if err != nil || keyRotationStatus == nil {
 		return &resource{ko}, err
 	}
-	ko.Spec.EnableKeyRotation = keyRotationStatus.KeyRotationEnabled
+	enabled := keyRotationStatus.KeyRotationEnabled
+	ko.Spec.EnableKeyRotation = &enabled
