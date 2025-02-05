@@ -18,7 +18,8 @@ import (
 
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	acktags "github.com/aws-controllers-k8s/runtime/pkg/tags"
-	svcsdk "github.com/aws/aws-sdk-go/service/kms"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/kms"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
 )
 
 // updateTags performs the TagResource API call using Spec.Tags field of
@@ -39,9 +40,9 @@ func (rm *resourceManager) updateTags(ctx context.Context, r *resource) (err err
 	if tagKeysToRemove != nil && len(tagKeysToRemove) > 0 {
 		untagKeyInput := svcsdk.UntagResourceInput{
 			KeyId:   r.ko.Status.KeyID,
-			TagKeys: tagKeysToRemove,
+			TagKeys: derefStringSlice(tagKeysToRemove),
 		}
-		_, err = rm.sdkapi.UntagResourceWithContext(ctx, &untagKeyInput)
+		_, err = rm.sdkapi.UntagResource(ctx, &untagKeyInput)
 		rm.metrics.RecordAPICall("UPDATE", "UntagResource", err)
 		if err != nil {
 			return err
@@ -51,21 +52,21 @@ func (rm *resourceManager) updateTags(ctx context.Context, r *resource) (err err
 	if len(desiredTags) == 0 {
 		return nil
 	}
-	var svcTags []*svcsdk.Tag
+	var svcTags []svcsdktypes.Tag
 	for k, v := range desiredTags {
 		kCopy := k
 		vCopy := v
-		tag := svcsdk.Tag{
+		tag := svcsdktypes.Tag{
 			TagKey:   &kCopy,
 			TagValue: &vCopy,
 		}
-		svcTags = append(svcTags, &tag)
+		svcTags = append(svcTags, tag)
 	}
 	tagKeyInput := svcsdk.TagResourceInput{
 		KeyId: r.ko.Status.KeyID,
 		Tags:  svcTags,
 	}
-	_, err = rm.sdkapi.TagResourceWithContext(ctx, &tagKeyInput)
+	_, err = rm.sdkapi.TagResource(ctx, &tagKeyInput)
 	rm.metrics.RecordAPICall("UPDATE", "TagResource", err)
 	return err
 }
@@ -86,15 +87,15 @@ func (rm *resourceManager) listTags(ctx context.Context, r *resource) (tags ackt
 			KeyId:  r.ko.Status.KeyID,
 			Marker: marker,
 		}
-		resp, err := rm.sdkapi.ListResourceTags(&listTagsInput)
+		resp, err := rm.sdkapi.ListResourceTags(ctx, &listTagsInput)
 		rm.metrics.RecordAPICall("GET", "ListResourceTags", err)
 		if err != nil {
 			return nil, err
 		}
-		if resp.Truncated == nil {
+		if !resp.Truncated {
 			truncated = false
 		} else {
-			truncated = *resp.Truncated
+			truncated = resp.Truncated
 		}
 		marker = resp.NextMarker
 		for _, t := range resp.Tags {
@@ -115,4 +116,14 @@ func removedTagKeys(desiredTags acktags.Tags, latestTags acktags.Tags) []*string
 		}
 	}
 	return removedKeys
+}
+
+func derefStringSlice(in []*string) []string {
+	out := make([]string, len(in))
+	for i, s := range in {
+		if s != nil {
+			out[i] = *s
+		}
+	}
+	return out
 }

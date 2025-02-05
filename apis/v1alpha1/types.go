@@ -51,10 +51,10 @@ type CustomKeyStoresListEntry struct {
 //
 // KMS applies the grant constraints only to cryptographic operations that support
 // an encryption context, that is, all cryptographic operations with a symmetric
-// encryption KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+// KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
 // Grant constraints are not applied to operations that do not support an encryption
-// context, such as cryptographic operations with HMAC KMS keys or asymmetric
-// KMS keys, and management operations, such as DescribeKey or RetireGrant.
+// context, such as cryptographic operations with asymmetric KMS keys and management
+// operations, such as DescribeKey or RetireGrant.
 //
 // In a cryptographic operation, the encryption context in the decryption operation
 // must be an exact, case-sensitive match for the keys and values in the encryption
@@ -81,10 +81,10 @@ type GrantListEntry struct {
 	//
 	// KMS applies the grant constraints only to cryptographic operations that support
 	// an encryption context, that is, all cryptographic operations with a symmetric
-	// encryption KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+	// KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
 	// Grant constraints are not applied to operations that do not support an encryption
-	// context, such as cryptographic operations with HMAC KMS keys or asymmetric
-	// KMS keys, and management operations, such as DescribeKey or RetireGrant.
+	// context, such as cryptographic operations with asymmetric KMS keys and management
+	// operations, such as DescribeKey or RetireGrant.
 	//
 	// In a cryptographic operation, the encryption context in the decryption operation
 	// must be an exact, case-sensitive match for the keys and values in the encryption
@@ -117,8 +117,8 @@ type KeyListEntry struct {
 
 // Contains metadata about a KMS key.
 //
-// This data type is used as a response element for the CreateKey and DescribeKey
-// operations.
+// This data type is used as a response element for the CreateKey, DescribeKey,
+// and ReplicateKey operations.
 type KeyMetadata struct {
 	AWSAccountID         *string      `json:"awsAccountID,omitempty"`
 	ARN                  *string      `json:"arn,omitempty"`
@@ -165,8 +165,17 @@ type MultiRegionKey struct {
 	Region *string `json:"region,omitempty"`
 }
 
+// Contains information about completed key material rotations.
+type RotationsListEntry struct {
+	KeyID        *string      `json:"keyID,omitempty"`
+	RotationDate *metav1.Time `json:"rotationDate,omitempty"`
+}
+
 // A key-value pair. A tag consists of a tag key and a tag value. Tag keys and
 // tag values are both required, but tag values can be empty (null) strings.
+//
+// Do not include confidential or sensitive information in this field. This
+// field may be displayed in plaintext in CloudTrail logs and other output.
 //
 // For information about the rules that apply to tag keys and tag values, see
 // User-Defined Tag Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)

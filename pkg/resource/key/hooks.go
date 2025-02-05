@@ -22,7 +22,7 @@ import (
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	svcsdk "github.com/aws/aws-sdk-go/service/kms"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/kms"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
@@ -111,21 +111,20 @@ func (rm *resourceManager) updateKeyRotation(ctx context.Context, r *resource) (
 	}
 
 	// sanity check for response from key rotation status
-	if keyRotationStatus == nil || keyRotationStatus.KeyRotationEnabled == nil {
+	if keyRotationStatus == nil {
 		return nil
 	}
 
 	if r.ko.Spec.EnableKeyRotation == nil {
 		// check if current status of key is enabled
-		// if yes, then only disable, or skip and return
-		if *keyRotationStatus.KeyRotationEnabled {
+		if keyRotationStatus.KeyRotationEnabled {
 			return rm.disableKeyRotation(r.ko.Status.KeyID)
 		}
 		return nil
 	}
 
 	// Check if desired state and actual state has any difference
-	if *keyRotationStatus.KeyRotationEnabled != *r.ko.Spec.EnableKeyRotation {
+	if keyRotationStatus.KeyRotationEnabled != *r.ko.Spec.EnableKeyRotation {
 		switch *r.ko.Spec.EnableKeyRotation {
 		case true:
 			return rm.enableKeyRotation(r.ko.Status.KeyID)
@@ -142,7 +141,7 @@ func (rm *resourceManager) getKeyRotationStatus(r *resource) (*svcsdk.GetKeyRota
 	keyRotationInput := svcsdk.GetKeyRotationStatusInput{
 		KeyId: r.ko.Status.KeyID,
 	}
-	resp, err := rm.sdkapi.GetKeyRotationStatus(&keyRotationInput)
+	resp, err := rm.sdkapi.GetKeyRotationStatus(context.Background(), &keyRotationInput)
 	rm.metrics.RecordAPICall("GET", "GetKeyRotationStatus", err)
 	if err != nil {
 		return nil, err
@@ -156,12 +155,11 @@ func (rm *resourceManager) enableKeyRotation(keyId *string) error {
 	enableKeyRotationInput := svcsdk.EnableKeyRotationInput{
 		KeyId: keyId,
 	}
-	_, err := rm.sdkapi.EnableKeyRotation(&enableKeyRotationInput)
+	_, err := rm.sdkapi.EnableKeyRotation(context.Background(), &enableKeyRotationInput)
 	rm.metrics.RecordAPICall("UPDATE", "EnableKeyRotation", err)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -170,11 +168,10 @@ func (rm *resourceManager) disableKeyRotation(keyId *string) error {
 	disableKeyRotationInput := svcsdk.DisableKeyRotationInput{
 		KeyId: keyId,
 	}
-	_, err := rm.sdkapi.DisableKeyRotation(&disableKeyRotationInput)
+	_, err := rm.sdkapi.DisableKeyRotation(context.Background(), &disableKeyRotationInput)
 	rm.metrics.RecordAPICall("UPDATE", "DisableKeyRotation", err)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }

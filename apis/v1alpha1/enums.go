@@ -18,24 +18,35 @@ package v1alpha1
 type AlgorithmSpec string
 
 const (
-	AlgorithmSpec_RSAES_PKCS1_V1_5   AlgorithmSpec = "RSAES_PKCS1_V1_5"
-	AlgorithmSpec_RSAES_OAEP_SHA_1   AlgorithmSpec = "RSAES_OAEP_SHA_1"
-	AlgorithmSpec_RSAES_OAEP_SHA_256 AlgorithmSpec = "RSAES_OAEP_SHA_256"
+	AlgorithmSpec_RSAES_OAEP_SHA_1         AlgorithmSpec = "RSAES_OAEP_SHA_1"
+	AlgorithmSpec_RSAES_OAEP_SHA_256       AlgorithmSpec = "RSAES_OAEP_SHA_256"
+	AlgorithmSpec_RSAES_PKCS1_V1_5         AlgorithmSpec = "RSAES_PKCS1_V1_5"
+	AlgorithmSpec_RSA_AES_KEY_WRAP_SHA_1   AlgorithmSpec = "RSA_AES_KEY_WRAP_SHA_1"
+	AlgorithmSpec_RSA_AES_KEY_WRAP_SHA_256 AlgorithmSpec = "RSA_AES_KEY_WRAP_SHA_256"
+	AlgorithmSpec_SM2PKE                   AlgorithmSpec = "SM2PKE"
 )
 
 type ConnectionErrorCodeType string
 
 const (
-	ConnectionErrorCodeType_INVALID_CREDENTIALS                   ConnectionErrorCodeType = "INVALID_CREDENTIALS"
-	ConnectionErrorCodeType_CLUSTER_NOT_FOUND                     ConnectionErrorCodeType = "CLUSTER_NOT_FOUND"
-	ConnectionErrorCodeType_NETWORK_ERRORS                        ConnectionErrorCodeType = "NETWORK_ERRORS"
-	ConnectionErrorCodeType_INTERNAL_ERROR                        ConnectionErrorCodeType = "INTERNAL_ERROR"
-	ConnectionErrorCodeType_INSUFFICIENT_CLOUDHSM_HSMS            ConnectionErrorCodeType = "INSUFFICIENT_CLOUDHSM_HSMS"
-	ConnectionErrorCodeType_USER_LOCKED_OUT                       ConnectionErrorCodeType = "USER_LOCKED_OUT"
-	ConnectionErrorCodeType_USER_NOT_FOUND                        ConnectionErrorCodeType = "USER_NOT_FOUND"
-	ConnectionErrorCodeType_USER_LOGGED_IN                        ConnectionErrorCodeType = "USER_LOGGED_IN"
-	ConnectionErrorCodeType_SUBNET_NOT_FOUND                      ConnectionErrorCodeType = "SUBNET_NOT_FOUND"
-	ConnectionErrorCodeType_INSUFFICIENT_FREE_ADDRESSES_IN_SUBNET ConnectionErrorCodeType = "INSUFFICIENT_FREE_ADDRESSES_IN_SUBNET"
+	ConnectionErrorCodeType_CLUSTER_NOT_FOUND                              ConnectionErrorCodeType = "CLUSTER_NOT_FOUND"
+	ConnectionErrorCodeType_INSUFFICIENT_CLOUDHSM_HSMS                     ConnectionErrorCodeType = "INSUFFICIENT_CLOUDHSM_HSMS"
+	ConnectionErrorCodeType_INSUFFICIENT_FREE_ADDRESSES_IN_SUBNET          ConnectionErrorCodeType = "INSUFFICIENT_FREE_ADDRESSES_IN_SUBNET"
+	ConnectionErrorCodeType_INTERNAL_ERROR                                 ConnectionErrorCodeType = "INTERNAL_ERROR"
+	ConnectionErrorCodeType_INVALID_CREDENTIALS                            ConnectionErrorCodeType = "INVALID_CREDENTIALS"
+	ConnectionErrorCodeType_NETWORK_ERRORS                                 ConnectionErrorCodeType = "NETWORK_ERRORS"
+	ConnectionErrorCodeType_SUBNET_NOT_FOUND                               ConnectionErrorCodeType = "SUBNET_NOT_FOUND"
+	ConnectionErrorCodeType_USER_LOCKED_OUT                                ConnectionErrorCodeType = "USER_LOCKED_OUT"
+	ConnectionErrorCodeType_USER_LOGGED_IN                                 ConnectionErrorCodeType = "USER_LOGGED_IN"
+	ConnectionErrorCodeType_USER_NOT_FOUND                                 ConnectionErrorCodeType = "USER_NOT_FOUND"
+	ConnectionErrorCodeType_XKS_PROXY_ACCESS_DENIED                        ConnectionErrorCodeType = "XKS_PROXY_ACCESS_DENIED"
+	ConnectionErrorCodeType_XKS_PROXY_INVALID_CONFIGURATION                ConnectionErrorCodeType = "XKS_PROXY_INVALID_CONFIGURATION"
+	ConnectionErrorCodeType_XKS_PROXY_INVALID_RESPONSE                     ConnectionErrorCodeType = "XKS_PROXY_INVALID_RESPONSE"
+	ConnectionErrorCodeType_XKS_PROXY_INVALID_TLS_CONFIGURATION            ConnectionErrorCodeType = "XKS_PROXY_INVALID_TLS_CONFIGURATION"
+	ConnectionErrorCodeType_XKS_PROXY_NOT_REACHABLE                        ConnectionErrorCodeType = "XKS_PROXY_NOT_REACHABLE"
+	ConnectionErrorCodeType_XKS_PROXY_TIMED_OUT                            ConnectionErrorCodeType = "XKS_PROXY_TIMED_OUT"
+	ConnectionErrorCodeType_XKS_VPC_ENDPOINT_SERVICE_INVALID_CONFIGURATION ConnectionErrorCodeType = "XKS_VPC_ENDPOINT_SERVICE_INVALID_CONFIGURATION"
+	ConnectionErrorCodeType_XKS_VPC_ENDPOINT_SERVICE_NOT_FOUND             ConnectionErrorCodeType = "XKS_VPC_ENDPOINT_SERVICE_NOT_FOUND"
 )
 
 type ConnectionStateType string
@@ -43,84 +54,104 @@ type ConnectionStateType string
 const (
 	ConnectionStateType_CONNECTED     ConnectionStateType = "CONNECTED"
 	ConnectionStateType_CONNECTING    ConnectionStateType = "CONNECTING"
-	ConnectionStateType_FAILED        ConnectionStateType = "FAILED"
 	ConnectionStateType_DISCONNECTED  ConnectionStateType = "DISCONNECTED"
 	ConnectionStateType_DISCONNECTING ConnectionStateType = "DISCONNECTING"
+	ConnectionStateType_FAILED        ConnectionStateType = "FAILED"
+)
+
+type CustomKeyStoreType string
+
+const (
+	CustomKeyStoreType_AWS_CLOUDHSM       CustomKeyStoreType = "AWS_CLOUDHSM"
+	CustomKeyStoreType_EXTERNAL_KEY_STORE CustomKeyStoreType = "EXTERNAL_KEY_STORE"
 )
 
 type CustomerMasterKeySpec string
 
 const (
-	CustomerMasterKeySpec_RSA_2048          CustomerMasterKeySpec = "RSA_2048"
-	CustomerMasterKeySpec_RSA_3072          CustomerMasterKeySpec = "RSA_3072"
-	CustomerMasterKeySpec_RSA_4096          CustomerMasterKeySpec = "RSA_4096"
 	CustomerMasterKeySpec_ECC_NIST_P256     CustomerMasterKeySpec = "ECC_NIST_P256"
 	CustomerMasterKeySpec_ECC_NIST_P384     CustomerMasterKeySpec = "ECC_NIST_P384"
 	CustomerMasterKeySpec_ECC_NIST_P521     CustomerMasterKeySpec = "ECC_NIST_P521"
 	CustomerMasterKeySpec_ECC_SECG_P256K1   CustomerMasterKeySpec = "ECC_SECG_P256K1"
-	CustomerMasterKeySpec_SYMMETRIC_DEFAULT CustomerMasterKeySpec = "SYMMETRIC_DEFAULT"
 	CustomerMasterKeySpec_HMAC_224          CustomerMasterKeySpec = "HMAC_224"
 	CustomerMasterKeySpec_HMAC_256          CustomerMasterKeySpec = "HMAC_256"
 	CustomerMasterKeySpec_HMAC_384          CustomerMasterKeySpec = "HMAC_384"
 	CustomerMasterKeySpec_HMAC_512          CustomerMasterKeySpec = "HMAC_512"
+	CustomerMasterKeySpec_RSA_2048          CustomerMasterKeySpec = "RSA_2048"
+	CustomerMasterKeySpec_RSA_3072          CustomerMasterKeySpec = "RSA_3072"
+	CustomerMasterKeySpec_RSA_4096          CustomerMasterKeySpec = "RSA_4096"
 	CustomerMasterKeySpec_SM2               CustomerMasterKeySpec = "SM2"
+	CustomerMasterKeySpec_SYMMETRIC_DEFAULT CustomerMasterKeySpec = "SYMMETRIC_DEFAULT"
 )
 
 type DataKeyPairSpec string
 
 const (
-	DataKeyPairSpec_RSA_2048        DataKeyPairSpec = "RSA_2048"
-	DataKeyPairSpec_RSA_3072        DataKeyPairSpec = "RSA_3072"
-	DataKeyPairSpec_RSA_4096        DataKeyPairSpec = "RSA_4096"
 	DataKeyPairSpec_ECC_NIST_P256   DataKeyPairSpec = "ECC_NIST_P256"
 	DataKeyPairSpec_ECC_NIST_P384   DataKeyPairSpec = "ECC_NIST_P384"
 	DataKeyPairSpec_ECC_NIST_P521   DataKeyPairSpec = "ECC_NIST_P521"
 	DataKeyPairSpec_ECC_SECG_P256K1 DataKeyPairSpec = "ECC_SECG_P256K1"
+	DataKeyPairSpec_RSA_2048        DataKeyPairSpec = "RSA_2048"
+	DataKeyPairSpec_RSA_3072        DataKeyPairSpec = "RSA_3072"
+	DataKeyPairSpec_RSA_4096        DataKeyPairSpec = "RSA_4096"
 	DataKeyPairSpec_SM2             DataKeyPairSpec = "SM2"
 )
 
 type DataKeySpec string
 
 const (
-	DataKeySpec_AES_256 DataKeySpec = "AES_256"
 	DataKeySpec_AES_128 DataKeySpec = "AES_128"
+	DataKeySpec_AES_256 DataKeySpec = "AES_256"
 )
 
 type EncryptionAlgorithmSpec string
 
 const (
-	EncryptionAlgorithmSpec_SYMMETRIC_DEFAULT  EncryptionAlgorithmSpec = "SYMMETRIC_DEFAULT"
 	EncryptionAlgorithmSpec_RSAES_OAEP_SHA_1   EncryptionAlgorithmSpec = "RSAES_OAEP_SHA_1"
 	EncryptionAlgorithmSpec_RSAES_OAEP_SHA_256 EncryptionAlgorithmSpec = "RSAES_OAEP_SHA_256"
 	EncryptionAlgorithmSpec_SM2PKE             EncryptionAlgorithmSpec = "SM2PKE"
+	EncryptionAlgorithmSpec_SYMMETRIC_DEFAULT  EncryptionAlgorithmSpec = "SYMMETRIC_DEFAULT"
 )
 
 type ExpirationModelType string
 
 const (
-	ExpirationModelType_KEY_MATERIAL_EXPIRES         ExpirationModelType = "KEY_MATERIAL_EXPIRES"
 	ExpirationModelType_KEY_MATERIAL_DOES_NOT_EXPIRE ExpirationModelType = "KEY_MATERIAL_DOES_NOT_EXPIRE"
+	ExpirationModelType_KEY_MATERIAL_EXPIRES         ExpirationModelType = "KEY_MATERIAL_EXPIRES"
 )
 
 type GrantOperation string
 
 const (
+	GrantOperation_CreateGrant                         GrantOperation = "CreateGrant"
 	GrantOperation_Decrypt                             GrantOperation = "Decrypt"
+	GrantOperation_DeriveSharedSecret                  GrantOperation = "DeriveSharedSecret"
+	GrantOperation_DescribeKey                         GrantOperation = "DescribeKey"
 	GrantOperation_Encrypt                             GrantOperation = "Encrypt"
 	GrantOperation_GenerateDataKey                     GrantOperation = "GenerateDataKey"
-	GrantOperation_GenerateDataKeyWithoutPlaintext     GrantOperation = "GenerateDataKeyWithoutPlaintext"
-	GrantOperation_ReEncryptFrom                       GrantOperation = "ReEncryptFrom"
-	GrantOperation_ReEncryptTo                         GrantOperation = "ReEncryptTo"
-	GrantOperation_Sign                                GrantOperation = "Sign"
-	GrantOperation_Verify                              GrantOperation = "Verify"
-	GrantOperation_GetPublicKey                        GrantOperation = "GetPublicKey"
-	GrantOperation_CreateGrant                         GrantOperation = "CreateGrant"
-	GrantOperation_RetireGrant                         GrantOperation = "RetireGrant"
-	GrantOperation_DescribeKey                         GrantOperation = "DescribeKey"
 	GrantOperation_GenerateDataKeyPair                 GrantOperation = "GenerateDataKeyPair"
 	GrantOperation_GenerateDataKeyPairWithoutPlaintext GrantOperation = "GenerateDataKeyPairWithoutPlaintext"
+	GrantOperation_GenerateDataKeyWithoutPlaintext     GrantOperation = "GenerateDataKeyWithoutPlaintext"
 	GrantOperation_GenerateMac                         GrantOperation = "GenerateMac"
+	GrantOperation_GetPublicKey                        GrantOperation = "GetPublicKey"
+	GrantOperation_ReEncryptFrom                       GrantOperation = "ReEncryptFrom"
+	GrantOperation_ReEncryptTo                         GrantOperation = "ReEncryptTo"
+	GrantOperation_RetireGrant                         GrantOperation = "RetireGrant"
+	GrantOperation_Sign                                GrantOperation = "Sign"
+	GrantOperation_Verify                              GrantOperation = "Verify"
 	GrantOperation_VerifyMac                           GrantOperation = "VerifyMac"
+)
+
+type KeyAgreementAlgorithmSpec string
+
+const (
+	KeyAgreementAlgorithmSpec_ECDH KeyAgreementAlgorithmSpec = "ECDH"
+)
+
+type KeyEncryptionMechanism string
+
+const (
+	KeyEncryptionMechanism_RSAES_OAEP_SHA_256 KeyEncryptionMechanism = "RSAES_OAEP_SHA_256"
 )
 
 type KeyManagerType string
@@ -133,27 +164,27 @@ const (
 type KeySpec_SDK string
 
 const (
-	KeySpec_SDK_RSA_2048          KeySpec_SDK = "RSA_2048"
-	KeySpec_SDK_RSA_3072          KeySpec_SDK = "RSA_3072"
-	KeySpec_SDK_RSA_4096          KeySpec_SDK = "RSA_4096"
 	KeySpec_SDK_ECC_NIST_P256     KeySpec_SDK = "ECC_NIST_P256"
 	KeySpec_SDK_ECC_NIST_P384     KeySpec_SDK = "ECC_NIST_P384"
 	KeySpec_SDK_ECC_NIST_P521     KeySpec_SDK = "ECC_NIST_P521"
 	KeySpec_SDK_ECC_SECG_P256K1   KeySpec_SDK = "ECC_SECG_P256K1"
-	KeySpec_SDK_SYMMETRIC_DEFAULT KeySpec_SDK = "SYMMETRIC_DEFAULT"
 	KeySpec_SDK_HMAC_224          KeySpec_SDK = "HMAC_224"
 	KeySpec_SDK_HMAC_256          KeySpec_SDK = "HMAC_256"
 	KeySpec_SDK_HMAC_384          KeySpec_SDK = "HMAC_384"
 	KeySpec_SDK_HMAC_512          KeySpec_SDK = "HMAC_512"
+	KeySpec_SDK_RSA_2048          KeySpec_SDK = "RSA_2048"
+	KeySpec_SDK_RSA_3072          KeySpec_SDK = "RSA_3072"
+	KeySpec_SDK_RSA_4096          KeySpec_SDK = "RSA_4096"
 	KeySpec_SDK_SM2               KeySpec_SDK = "SM2"
+	KeySpec_SDK_SYMMETRIC_DEFAULT KeySpec_SDK = "SYMMETRIC_DEFAULT"
 )
 
 type KeyState string
 
 const (
 	KeyState_Creating               KeyState = "Creating"
-	KeyState_Enabled                KeyState = "Enabled"
 	KeyState_Disabled               KeyState = "Disabled"
+	KeyState_Enabled                KeyState = "Enabled"
 	KeyState_PendingDeletion        KeyState = "PendingDeletion"
 	KeyState_PendingImport          KeyState = "PendingImport"
 	KeyState_PendingReplicaDeletion KeyState = "PendingReplicaDeletion"
@@ -164,9 +195,10 @@ const (
 type KeyUsageType string
 
 const (
-	KeyUsageType_SIGN_VERIFY         KeyUsageType = "SIGN_VERIFY"
 	KeyUsageType_ENCRYPT_DECRYPT     KeyUsageType = "ENCRYPT_DECRYPT"
 	KeyUsageType_GENERATE_VERIFY_MAC KeyUsageType = "GENERATE_VERIFY_MAC"
+	KeyUsageType_KEY_AGREEMENT       KeyUsageType = "KEY_AGREEMENT"
+	KeyUsageType_SIGN_VERIFY         KeyUsageType = "SIGN_VERIFY"
 )
 
 type MacAlgorithmSpec string
@@ -181,8 +213,8 @@ const (
 type MessageType string
 
 const (
-	MessageType_RAW    MessageType = "RAW"
 	MessageType_DIGEST MessageType = "DIGEST"
+	MessageType_RAW    MessageType = "RAW"
 )
 
 type MultiRegionKeyType string
@@ -195,23 +227,31 @@ const (
 type OriginType string
 
 const (
-	OriginType_AWS_KMS      OriginType = "AWS_KMS"
-	OriginType_EXTERNAL     OriginType = "EXTERNAL"
-	OriginType_AWS_CLOUDHSM OriginType = "AWS_CLOUDHSM"
+	OriginType_AWS_CLOUDHSM       OriginType = "AWS_CLOUDHSM"
+	OriginType_AWS_KMS            OriginType = "AWS_KMS"
+	OriginType_EXTERNAL           OriginType = "EXTERNAL"
+	OriginType_EXTERNAL_KEY_STORE OriginType = "EXTERNAL_KEY_STORE"
+)
+
+type RotationType string
+
+const (
+	RotationType_AUTOMATIC RotationType = "AUTOMATIC"
+	RotationType_ON_DEMAND RotationType = "ON_DEMAND"
 )
 
 type SigningAlgorithmSpec string
 
 const (
-	SigningAlgorithmSpec_RSASSA_PSS_SHA_256        SigningAlgorithmSpec = "RSASSA_PSS_SHA_256"
-	SigningAlgorithmSpec_RSASSA_PSS_SHA_384        SigningAlgorithmSpec = "RSASSA_PSS_SHA_384"
-	SigningAlgorithmSpec_RSASSA_PSS_SHA_512        SigningAlgorithmSpec = "RSASSA_PSS_SHA_512"
-	SigningAlgorithmSpec_RSASSA_PKCS1_V1_5_SHA_256 SigningAlgorithmSpec = "RSASSA_PKCS1_V1_5_SHA_256"
-	SigningAlgorithmSpec_RSASSA_PKCS1_V1_5_SHA_384 SigningAlgorithmSpec = "RSASSA_PKCS1_V1_5_SHA_384"
-	SigningAlgorithmSpec_RSASSA_PKCS1_V1_5_SHA_512 SigningAlgorithmSpec = "RSASSA_PKCS1_V1_5_SHA_512"
 	SigningAlgorithmSpec_ECDSA_SHA_256             SigningAlgorithmSpec = "ECDSA_SHA_256"
 	SigningAlgorithmSpec_ECDSA_SHA_384             SigningAlgorithmSpec = "ECDSA_SHA_384"
 	SigningAlgorithmSpec_ECDSA_SHA_512             SigningAlgorithmSpec = "ECDSA_SHA_512"
+	SigningAlgorithmSpec_RSASSA_PKCS1_V1_5_SHA_256 SigningAlgorithmSpec = "RSASSA_PKCS1_V1_5_SHA_256"
+	SigningAlgorithmSpec_RSASSA_PKCS1_V1_5_SHA_384 SigningAlgorithmSpec = "RSASSA_PKCS1_V1_5_SHA_384"
+	SigningAlgorithmSpec_RSASSA_PKCS1_V1_5_SHA_512 SigningAlgorithmSpec = "RSASSA_PKCS1_V1_5_SHA_512"
+	SigningAlgorithmSpec_RSASSA_PSS_SHA_256        SigningAlgorithmSpec = "RSASSA_PSS_SHA_256"
+	SigningAlgorithmSpec_RSASSA_PSS_SHA_384        SigningAlgorithmSpec = "RSASSA_PSS_SHA_384"
+	SigningAlgorithmSpec_RSASSA_PSS_SHA_512        SigningAlgorithmSpec = "RSASSA_PSS_SHA_512"
 	SigningAlgorithmSpec_SM2DSA                    SigningAlgorithmSpec = "SM2DSA"
 )
 
@@ -219,4 +259,14 @@ type WrappingKeySpec string
 
 const (
 	WrappingKeySpec_RSA_2048 WrappingKeySpec = "RSA_2048"
+	WrappingKeySpec_RSA_3072 WrappingKeySpec = "RSA_3072"
+	WrappingKeySpec_RSA_4096 WrappingKeySpec = "RSA_4096"
+	WrappingKeySpec_SM2      WrappingKeySpec = "SM2"
+)
+
+type XksProxyConnectivityType string
+
+const (
+	XksProxyConnectivityType_PUBLIC_ENDPOINT      XksProxyConnectivityType = "PUBLIC_ENDPOINT"
+	XksProxyConnectivityType_VPC_ENDPOINT_SERVICE XksProxyConnectivityType = "VPC_ENDPOINT_SERVICE"
 )
