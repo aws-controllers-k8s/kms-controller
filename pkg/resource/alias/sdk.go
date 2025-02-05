@@ -28,8 +28,10 @@ import (
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/kms"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
+	smithy "github.com/aws/smithy-go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -40,8 +42,7 @@ import (
 var (
 	_ = &metav1.Time{}
 	_ = strings.ToLower("")
-	_ = &aws.JSONValue{}
-	_ = &svcsdk.KMS{}
+	_ = &svcsdk.Client{}
 	_ = &svcapitypes.Alias{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
@@ -49,6 +50,7 @@ var (
 	_ = &reflect.Value{}
 	_ = fmt.Sprintf("")
 	_ = &ackrequeue.NoRequeue{}
+	_ = &aws.Config{}
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
@@ -73,10 +75,11 @@ func (rm *resourceManager) sdkFind(
 		return nil, err
 	}
 	var resp *svcsdk.ListAliasesOutput
-	resp, err = rm.sdkapi.ListAliasesWithContext(ctx, input)
+	resp, err = rm.sdkapi.ListAliases(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
 	if err != nil {
-		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
+		var awsErr smithy.APIError
+		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "NotFound" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -87,14 +90,14 @@ func (rm *resourceManager) sdkFind(
 	ko := r.ko.DeepCopy()
 	// TODO(vijtrip2): remove this pagination handling once it is handled by the
 	// ACK code-generator. https://github.com/aws-controllers-k8s/community/issues/1383
-	aliases := []*svcsdk.AliasListEntry{}
+	aliases := []svcsdktypes.AliasListEntry{}
 	aliases = append(aliases, resp.Aliases...)
-	for resp.Truncated != nil && *resp.Truncated {
+	for resp.Truncated {
 		input.Marker = resp.NextMarker
-		resp, err = rm.sdkapi.ListAliasesWithContext(ctx, input)
+		resp, err = rm.sdkapi.ListAliases(ctx, input)
 		rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
 		if err != nil {
-			if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
+			if awsErr, ok := ackerr.AWSError(err); ok && awsErr.ErrorCode() == "NotFound" {
 				return nil, ackerr.NotFound
 			}
 			return nil, err
@@ -102,7 +105,7 @@ func (rm *resourceManager) sdkFind(
 		aliases = append(aliases, resp.Aliases...)
 	}
 	// Filter resulting aliases, matching only the one with the name in the spec
-	matchingAliases := []*svcsdk.AliasListEntry{}
+	matchingAliases := []svcsdktypes.AliasListEntry{}
 	for _, elem := range aliases {
 		if elem.AliasName == nil || r.ko.Spec.Name == nil {
 			continue
@@ -177,7 +180,7 @@ func (rm *resourceManager) sdkCreate(
 
 	var resp *svcsdk.CreateAliasOutput
 	_ = resp
-	resp, err = rm.sdkapi.CreateAliasWithContext(ctx, input)
+	resp, err = rm.sdkapi.CreateAlias(ctx, input)
 	rm.metrics.RecordAPICall("CREATE", "CreateAlias", err)
 	if err != nil {
 		return nil, err
@@ -199,10 +202,10 @@ func (rm *resourceManager) newCreateRequestPayload(
 	res := &svcsdk.CreateAliasInput{}
 
 	if r.ko.Spec.Name != nil {
-		res.SetAliasName(*r.ko.Spec.Name)
+		res.AliasName = r.ko.Spec.Name
 	}
 	if r.ko.Spec.TargetKeyID != nil {
-		res.SetTargetKeyId(*r.ko.Spec.TargetKeyID)
+		res.TargetKeyId = r.ko.Spec.TargetKeyID
 	}
 
 	return res, nil
@@ -228,7 +231,7 @@ func (rm *resourceManager) sdkUpdate(
 
 	var resp *svcsdk.UpdateAliasOutput
 	_ = resp
-	resp, err = rm.sdkapi.UpdateAliasWithContext(ctx, input)
+	resp, err = rm.sdkapi.UpdateAlias(ctx, input)
 	rm.metrics.RecordAPICall("UPDATE", "UpdateAlias", err)
 	if err != nil {
 		return nil, err
@@ -251,10 +254,10 @@ func (rm *resourceManager) newUpdateRequestPayload(
 	res := &svcsdk.UpdateAliasInput{}
 
 	if r.ko.Spec.Name != nil {
-		res.SetAliasName(*r.ko.Spec.Name)
+		res.AliasName = r.ko.Spec.Name
 	}
 	if r.ko.Spec.TargetKeyID != nil {
-		res.SetTargetKeyId(*r.ko.Spec.TargetKeyID)
+		res.TargetKeyId = r.ko.Spec.TargetKeyID
 	}
 
 	return res, nil
@@ -276,7 +279,7 @@ func (rm *resourceManager) sdkDelete(
 	}
 	var resp *svcsdk.DeleteAliasOutput
 	_ = resp
-	resp, err = rm.sdkapi.DeleteAliasWithContext(ctx, input)
+	resp, err = rm.sdkapi.DeleteAlias(ctx, input)
 	rm.metrics.RecordAPICall("DELETE", "DeleteAlias", err)
 	return nil, err
 }
@@ -289,7 +292,7 @@ func (rm *resourceManager) newDeleteRequestPayload(
 	res := &svcsdk.DeleteAliasInput{}
 
 	if r.ko.Spec.Name != nil {
-		res.SetAliasName(*r.ko.Spec.Name)
+		res.AliasName = r.ko.Spec.Name
 	}
 
 	return res, nil
@@ -394,17 +397,6 @@ func (rm *resourceManager) updateConditions(
 // and if the exception indicates that it is a Terminal exception
 // 'Terminal' exception are specified in generator configuration
 func (rm *resourceManager) terminalAWSError(err error) bool {
-	if err == nil {
-		return false
-	}
-	awsErr, ok := ackerr.AWSError(err)
-	if !ok {
-		return false
-	}
-	switch awsErr.Code() {
-	case "ValidationException":
-		return true
-	default:
-		return false
-	}
+	// No terminal_errors specified for this resource in generator config
+	return false
 }

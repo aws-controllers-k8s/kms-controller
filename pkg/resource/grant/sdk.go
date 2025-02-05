@@ -28,8 +28,10 @@ import (
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/kms"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
+	smithy "github.com/aws/smithy-go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -40,8 +42,7 @@ import (
 var (
 	_ = &metav1.Time{}
 	_ = strings.ToLower("")
-	_ = &aws.JSONValue{}
-	_ = &svcsdk.KMS{}
+	_ = &svcsdk.Client{}
 	_ = &svcapitypes.Grant{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
@@ -49,6 +50,7 @@ var (
 	_ = &reflect.Value{}
 	_ = fmt.Sprintf("")
 	_ = &ackrequeue.NoRequeue{}
+	_ = &aws.Config{}
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
@@ -72,11 +74,12 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
-	var resp *svcsdk.ListGrantsResponse
-	resp, err = rm.sdkapi.ListGrantsWithContext(ctx, input)
+	var resp *svcsdk.ListGrantsOutput
+	resp, err = rm.sdkapi.ListGrants(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "ListGrants", err)
 	if err != nil {
-		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
+		var awsErr smithy.APIError
+		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "NotFound" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -91,22 +94,10 @@ func (rm *resourceManager) sdkFind(
 		if elem.Constraints != nil {
 			f0 := &svcapitypes.GrantConstraints{}
 			if elem.Constraints.EncryptionContextEquals != nil {
-				f0f0 := map[string]*string{}
-				for f0f0key, f0f0valiter := range elem.Constraints.EncryptionContextEquals {
-					var f0f0val string
-					f0f0val = *f0f0valiter
-					f0f0[f0f0key] = &f0f0val
-				}
-				f0.EncryptionContextEquals = f0f0
+				f0.EncryptionContextEquals = aws.StringMap(elem.Constraints.EncryptionContextEquals)
 			}
 			if elem.Constraints.EncryptionContextSubset != nil {
-				f0f1 := map[string]*string{}
-				for f0f1key, f0f1valiter := range elem.Constraints.EncryptionContextSubset {
-					var f0f1val string
-					f0f1val = *f0f1valiter
-					f0f1[f0f1key] = &f0f1val
-				}
-				f0.EncryptionContextSubset = f0f1
+				f0.EncryptionContextSubset = aws.StringMap(elem.Constraints.EncryptionContextSubset)
 			}
 			ko.Spec.Constraints = f0
 		} else {
@@ -135,9 +126,9 @@ func (rm *resourceManager) sdkFind(
 		if elem.Operations != nil {
 			f7 := []*string{}
 			for _, f7iter := range elem.Operations {
-				var f7elem string
-				f7elem = *f7iter
-				f7 = append(f7, &f7elem)
+				var f7elem *string
+				f7elem = aws.String(string(f7iter))
+				f7 = append(f7, f7elem)
 			}
 			ko.Spec.Operations = f7
 		} else {
@@ -177,13 +168,13 @@ func (rm *resourceManager) newListRequestPayload(
 	res := &svcsdk.ListGrantsInput{}
 
 	if r.ko.Status.GrantID != nil {
-		res.SetGrantId(*r.ko.Status.GrantID)
+		res.GrantId = r.ko.Status.GrantID
 	}
 	if r.ko.Spec.GranteePrincipal != nil {
-		res.SetGranteePrincipal(*r.ko.Spec.GranteePrincipal)
+		res.GranteePrincipal = r.ko.Spec.GranteePrincipal
 	}
 	if r.ko.Spec.KeyID != nil {
-		res.SetKeyId(*r.ko.Spec.KeyID)
+		res.KeyId = r.ko.Spec.KeyID
 	}
 
 	return res, nil
@@ -208,7 +199,7 @@ func (rm *resourceManager) sdkCreate(
 
 	var resp *svcsdk.CreateGrantOutput
 	_ = resp
-	resp, err = rm.sdkapi.CreateGrantWithContext(ctx, input)
+	resp, err = rm.sdkapi.CreateGrant(ctx, input)
 	rm.metrics.RecordAPICall("CREATE", "CreateGrant", err)
 	if err != nil {
 		return nil, err
@@ -241,56 +232,38 @@ func (rm *resourceManager) newCreateRequestPayload(
 	res := &svcsdk.CreateGrantInput{}
 
 	if r.ko.Spec.Constraints != nil {
-		f0 := &svcsdk.GrantConstraints{}
+		f0 := &svcsdktypes.GrantConstraints{}
 		if r.ko.Spec.Constraints.EncryptionContextEquals != nil {
-			f0f0 := map[string]*string{}
-			for f0f0key, f0f0valiter := range r.ko.Spec.Constraints.EncryptionContextEquals {
-				var f0f0val string
-				f0f0val = *f0f0valiter
-				f0f0[f0f0key] = &f0f0val
-			}
-			f0.SetEncryptionContextEquals(f0f0)
+			f0.EncryptionContextEquals = aws.ToStringMap(r.ko.Spec.Constraints.EncryptionContextEquals)
 		}
 		if r.ko.Spec.Constraints.EncryptionContextSubset != nil {
-			f0f1 := map[string]*string{}
-			for f0f1key, f0f1valiter := range r.ko.Spec.Constraints.EncryptionContextSubset {
-				var f0f1val string
-				f0f1val = *f0f1valiter
-				f0f1[f0f1key] = &f0f1val
-			}
-			f0.SetEncryptionContextSubset(f0f1)
+			f0.EncryptionContextSubset = aws.ToStringMap(r.ko.Spec.Constraints.EncryptionContextSubset)
 		}
-		res.SetConstraints(f0)
+		res.Constraints = f0
 	}
 	if r.ko.Spec.GrantTokens != nil {
-		f1 := []*string{}
-		for _, f1iter := range r.ko.Spec.GrantTokens {
-			var f1elem string
-			f1elem = *f1iter
-			f1 = append(f1, &f1elem)
-		}
-		res.SetGrantTokens(f1)
+		res.GrantTokens = aws.ToStringSlice(r.ko.Spec.GrantTokens)
 	}
 	if r.ko.Spec.GranteePrincipal != nil {
-		res.SetGranteePrincipal(*r.ko.Spec.GranteePrincipal)
+		res.GranteePrincipal = r.ko.Spec.GranteePrincipal
 	}
 	if r.ko.Spec.KeyID != nil {
-		res.SetKeyId(*r.ko.Spec.KeyID)
+		res.KeyId = r.ko.Spec.KeyID
 	}
 	if r.ko.Spec.Name != nil {
-		res.SetName(*r.ko.Spec.Name)
+		res.Name = r.ko.Spec.Name
 	}
 	if r.ko.Spec.Operations != nil {
-		f5 := []*string{}
+		f5 := []svcsdktypes.GrantOperation{}
 		for _, f5iter := range r.ko.Spec.Operations {
 			var f5elem string
-			f5elem = *f5iter
-			f5 = append(f5, &f5elem)
+			f5elem = string(*f5iter)
+			f5 = append(f5, svcsdktypes.GrantOperation(f5elem))
 		}
-		res.SetOperations(f5)
+		res.Operations = f5
 	}
 	if r.ko.Spec.RetiringPrincipal != nil {
-		res.SetRetiringPrincipal(*r.ko.Spec.RetiringPrincipal)
+		res.RetiringPrincipal = r.ko.Spec.RetiringPrincipal
 	}
 
 	return res, nil
@@ -323,7 +296,7 @@ func (rm *resourceManager) sdkDelete(
 	}
 	var resp *svcsdk.RevokeGrantOutput
 	_ = resp
-	resp, err = rm.sdkapi.RevokeGrantWithContext(ctx, input)
+	resp, err = rm.sdkapi.RevokeGrant(ctx, input)
 	rm.metrics.RecordAPICall("DELETE", "RevokeGrant", err)
 	return nil, err
 }
@@ -336,10 +309,10 @@ func (rm *resourceManager) newDeleteRequestPayload(
 	res := &svcsdk.RevokeGrantInput{}
 
 	if r.ko.Status.GrantID != nil {
-		res.SetGrantId(*r.ko.Status.GrantID)
+		res.GrantId = r.ko.Status.GrantID
 	}
 	if r.ko.Spec.KeyID != nil {
-		res.SetKeyId(*r.ko.Spec.KeyID)
+		res.KeyId = r.ko.Spec.KeyID
 	}
 
 	return res, nil
