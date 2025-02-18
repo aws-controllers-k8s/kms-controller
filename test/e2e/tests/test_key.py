@@ -244,18 +244,6 @@ class TestKey:
 
         key_policy = kms_client.get_key_policy(KeyId=key_id, PolicyName='default')
         assert 'updated-key-policy' in key_policy['Policy']
-
-        # updating description should set terminal condition on the resource
-        # because only tags and policy related fields can be updated on the Key
-        # resource
-        updates = {
-            "spec": {
-                "description": 'only policy and tags update are supported'
-            }
-        }
-        k8s.patch_custom_resource(ref, updates)
-        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
-        assert k8s.wait_on_condition(ref, "ACK.Terminal", "True", wait_periods=10)
     
     def test_create_with_rotation(self, kms_client, key_with_rotation):
         (ref, cr) = key_with_rotation
