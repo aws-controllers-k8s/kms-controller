@@ -52,6 +52,7 @@ type GrantSpec struct {
 	// in the Key Management Service Developer Guide. For more information about
 	// encryption context, see Encryption context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context)
 	// in the Key Management Service Developer Guide .
+
 	Constraints *GrantConstraints `json:"constraints,omitempty"`
 	// A list of grant tokens.
 	//
@@ -60,6 +61,7 @@ type GrantSpec struct {
 	// see Grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token)
 	// and Using a grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token)
 	// in the Key Management Service Developer Guide.
+
 	GrantTokens []*string `json:"grantTokens,omitempty"`
 	// The identity that gets the permissions specified in the grant.
 	//
@@ -68,7 +70,9 @@ type GrantSpec struct {
 	// accounts, IAM users, IAM roles, federated users, and assumed role users.
 	// For help with the ARN syntax for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
 	// in the Identity and Access Management User Guide .
+
 	// +kubebuilder:validation:Required
+
 	GranteePrincipal *string `json:"granteePrincipal"`
 	// Identifies the KMS key for the grant. The grant gives principals permission
 	// to use this KMS key.
@@ -78,12 +82,14 @@ type GrantSpec struct {
 	//
 	// For example:
 	//
-	//   - Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//    * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
 	//
-	//   - Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+	//    * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
 	//
 	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
-	KeyID  *string                                  `json:"keyID,omitempty"`
+
+	KeyID *string `json:"keyID,omitempty"`
+
 	KeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"keyRef,omitempty"`
 	// A friendly name for the grant. Use this value to prevent the unintended creation
 	// of duplicate grants when retrying this request.
@@ -100,6 +106,7 @@ type GrantSpec struct {
 	// without creating a new grant. Note that the returned grant token is unique
 	// with every CreateGrant request, even when a duplicate GrantId is returned.
 	// All grant tokens for the same grant ID can be used interchangeably.
+
 	Name *string `json:"name,omitempty"`
 	// A list of operations that the grant permits.
 	//
@@ -110,7 +117,9 @@ type GrantSpec struct {
 	// If you try, KMS returns a ValidationError exception. For details, see Grant
 	// operations (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#terms-grant-operations)
 	// in the Key Management Service Developer Guide.
+
 	// +kubebuilder:validation:Required
+
 	Operations []*string `json:"operations"`
 	// The principal that has permission to use the RetireGrant operation to retire
 	// the grant.
@@ -125,6 +134,7 @@ type GrantSpec struct {
 	// permission to retire the grant or revoke the grant. For details, see RevokeGrant
 	// and Retiring and revoking grants (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#grant-delete)
 	// in the Key Management Service Developer Guide.
+
 	RetiringPrincipal *string `json:"retiringPrincipal,omitempty"`
 }
 
@@ -135,7 +145,7 @@ type GrantStatus struct {
 	// constructed ARN for the resource
 	// +kubebuilder:validation:Optional
 	ACKResourceMetadata *ackv1alpha1.ResourceMetadata `json:"ackResourceMetadata"`
-	// All CRS managed by ACK have a common `Status.Conditions` member that
+	// All CRs managed by ACK have a common `Status.Conditions` member that
 	// contains a collection of `ackv1alpha1.Condition` objects that describe
 	// the various terminal states of the CR and its backend AWS service API
 	// resource

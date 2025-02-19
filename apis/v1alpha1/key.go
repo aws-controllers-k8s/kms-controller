@@ -35,6 +35,7 @@ type KeySpec struct {
 	// Use this parameter only when you intend to prevent the principal that is
 	// making the request from making a subsequent PutKeyPolicy (https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html)
 	// request on the KMS key.
+
 	BypassPolicyLockoutSafetyCheck *bool `json:"bypassPolicyLockoutSafetyCheck,omitempty"`
 	// Creates the KMS key in the specified custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html).
 	// The ConnectionState of the custom key store must be CONNECTED. To find the
@@ -48,6 +49,9 @@ type KeySpec struct {
 	// with the KMS key. When you create a KMS key in an external key store, you
 	// must use the XksKeyId parameter to specify an external key that serves as
 	// key material for the KMS key.
+
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+
 	CustomKeyStoreID *string `json:"customKeyStoreID,omitempty"`
 	// A description of the KMS key. Use a description that helps you decide whether
 	// the KMS key is appropriate for a task. The default value is an empty string
@@ -57,8 +61,12 @@ type KeySpec struct {
 	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// To set or change the description after the key is created, use UpdateKeyDescription.
-	Description       *string `json:"description,omitempty"`
-	EnableKeyRotation *bool   `json:"enableKeyRotation,omitempty"`
+
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+
+	Description *string `json:"description,omitempty"`
+
+	EnableKeyRotation *bool `json:"enableKeyRotation,omitempty"`
 	// Specifies the type of KMS key to create. The default value, SYMMETRIC_DEFAULT,
 	// creates a KMS key with a 256-bit AES-GCM key that is used for encryption
 	// and decryption, except in China Regions, where it creates a 128-bit symmetric
@@ -82,22 +90,25 @@ type KeySpec struct {
 	//
 	// KMS supports the following key specs for KMS keys:
 	//
-	//   - Symmetric encryption key (default) SYMMETRIC_DEFAULT
+	//    * Symmetric encryption key (default) SYMMETRIC_DEFAULT
 	//
-	//   - HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
+	//    * HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
 	//
-	//   - Asymmetric RSA key pairs (encryption and decryption -or- signing and
-	//     verification) RSA_2048 RSA_3072 RSA_4096
+	//    * Asymmetric RSA key pairs (encryption and decryption -or- signing and
+	//    verification) RSA_2048 RSA_3072 RSA_4096
 	//
-	//   - Asymmetric NIST-recommended elliptic curve key pairs (signing and verification
-	//     -or- deriving shared secrets) ECC_NIST_P256 (secp256r1) ECC_NIST_P384
-	//     (secp384r1) ECC_NIST_P521 (secp521r1)
+	//    * Asymmetric NIST-recommended elliptic curve key pairs (signing and verification
+	//    -or- deriving shared secrets) ECC_NIST_P256 (secp256r1) ECC_NIST_P384
+	//    (secp384r1) ECC_NIST_P521 (secp521r1)
 	//
-	//   - Other asymmetric elliptic curve key pairs (signing and verification)
-	//     ECC_SECG_P256K1 (secp256k1), commonly used for cryptocurrencies.
+	//    * Other asymmetric elliptic curve key pairs (signing and verification)
+	//    ECC_SECG_P256K1 (secp256k1), commonly used for cryptocurrencies.
 	//
-	//   - SM2 key pairs (encryption and decryption -or- signing and verification
-	//     -or- deriving shared secrets) SM2 (China Regions only)
+	//    * SM2 key pairs (encryption and decryption -or- signing and verification
+	//    -or- deriving shared secrets) SM2 (China Regions only)
+
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+
 	KeySpec *string `json:"keySpec,omitempty"`
 	// Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
 	// for which you can use the KMS key. The default value is ENCRYPT_DECRYPT.
@@ -107,20 +118,23 @@ type KeySpec struct {
 	//
 	// Select only one valid value.
 	//
-	//   - For symmetric encryption KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
+	//    * For symmetric encryption KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
 	//
-	//   - For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
+	//    * For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
 	//
-	//   - For asymmetric KMS keys with RSA key pairs, specify ENCRYPT_DECRYPT
-	//     or SIGN_VERIFY.
+	//    * For asymmetric KMS keys with RSA key pairs, specify ENCRYPT_DECRYPT
+	//    or SIGN_VERIFY.
 	//
-	//   - For asymmetric KMS keys with NIST-recommended elliptic curve key pairs,
-	//     specify SIGN_VERIFY or KEY_AGREEMENT.
+	//    * For asymmetric KMS keys with NIST-recommended elliptic curve key pairs,
+	//    specify SIGN_VERIFY or KEY_AGREEMENT.
 	//
-	//   - For asymmetric KMS keys with ECC_SECG_P256K1 key pairs specify SIGN_VERIFY.
+	//    * For asymmetric KMS keys with ECC_SECG_P256K1 key pairs specify SIGN_VERIFY.
 	//
-	//   - For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
-	//     ENCRYPT_DECRYPT, SIGN_VERIFY, or KEY_AGREEMENT.
+	//    * For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
+	//    ENCRYPT_DECRYPT, SIGN_VERIFY, or KEY_AGREEMENT.
+
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+
 	KeyUsage *string `json:"keyUsage,omitempty"`
 	// Creates a multi-Region primary key that you can replicate into other Amazon
 	// Web Services Regions. You cannot change this value after you create the KMS
@@ -144,6 +158,9 @@ type KeySpec struct {
 	// You can create a symmetric or asymmetric multi-Region key, and you can create
 	// a multi-Region key with imported key material. However, you cannot create
 	// a multi-Region key in a custom key store.
+
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+
 	MultiRegion *bool `json:"multiRegion,omitempty"`
 	// The source of the key material for the KMS key. You cannot change the origin
 	// after you create the KMS key. The default is AWS_KMS, which means that KMS
@@ -164,25 +181,28 @@ type KeySpec struct {
 	// set this value to EXTERNAL_KEY_STORE. You must also use the CustomKeyStoreId
 	// parameter to identify the external key store and the XksKeyId parameter to
 	// identify the associated external key. The KeySpec value must be SYMMETRIC_DEFAULT.
+
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+
 	Origin *string `json:"origin,omitempty"`
 	// The key policy to attach to the KMS key.
 	//
 	// If you provide a key policy, it must meet the following criteria:
 	//
-	//   - The key policy must allow the calling principal to make a subsequent
-	//     PutKeyPolicy request on the KMS key. This reduces the risk that the KMS
-	//     key becomes unmanageable. For more information, see Default key policy
-	//     (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
-	//     in the Key Management Service Developer Guide. (To omit this condition,
-	//     set BypassPolicyLockoutSafetyCheck to true.)
+	//    * The key policy must allow the calling principal to make a subsequent
+	//    PutKeyPolicy request on the KMS key. This reduces the risk that the KMS
+	//    key becomes unmanageable. For more information, see Default key policy
+	//    (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
+	//    in the Key Management Service Developer Guide. (To omit this condition,
+	//    set BypassPolicyLockoutSafetyCheck to true.)
 	//
-	//   - Each statement in the key policy must contain one or more principals.
-	//     The principals in the key policy must exist and be visible to KMS. When
-	//     you create a new Amazon Web Services principal, you might need to enforce
-	//     a delay before including the new principal in a key policy because the
-	//     new principal might not be immediately visible to KMS. For more information,
-	//     see Changes that I make are not always immediately visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
-	//     in the Amazon Web Services Identity and Access Management User Guide.
+	//    * Each statement in the key policy must contain one or more principals.
+	//    The principals in the key policy must exist and be visible to KMS. When
+	//    you create a new Amazon Web Services principal, you might need to enforce
+	//    a delay before including the new principal in a key policy because the
+	//    new principal might not be immediately visible to KMS. For more information,
+	//    see Changes that I make are not always immediately visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
+	//    in the Amazon Web Services Identity and Access Management User Guide.
 	//
 	// If you do not provide a key policy, KMS attaches a default key policy to
 	// the KMS key. For more information, see Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default)
@@ -193,6 +213,7 @@ type KeySpec struct {
 	// For help writing and formatting a JSON policy document, see the IAM JSON
 	// Policy Reference (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html)
 	// in the Identity and Access Management User Guide .
+
 	Policy *string `json:"policy,omitempty"`
 	// Assigns one or more tags to the KMS key. Use this parameter to tag the KMS
 	// key when it is created. To tag an existing KMS key, use the TagResource operation.
@@ -217,6 +238,7 @@ type KeySpec struct {
 	// generates a cost allocation report with usage and costs aggregated by tags.
 	// Tags can also be used to control access to a KMS key. For details, see Tagging
 	// Keys (https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html).
+
 	Tags []*Tag `json:"tags,omitempty"`
 }
 
@@ -227,7 +249,7 @@ type KeyStatus struct {
 	// constructed ARN for the resource
 	// +kubebuilder:validation:Optional
 	ACKResourceMetadata *ackv1alpha1.ResourceMetadata `json:"ackResourceMetadata"`
-	// All CRS managed by ACK have a common `Status.Conditions` member that
+	// All CRs managed by ACK have a common `Status.Conditions` member that
 	// contains a collection of `ackv1alpha1.Condition` objects that describe
 	// the various terminal states of the CR and its backend AWS service API
 	// resource

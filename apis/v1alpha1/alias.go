@@ -33,7 +33,9 @@ type AliasSpec struct {
 	// alphanumeric characters, forward slashes (/), underscores (_), and dashes
 	// (-). The alias name cannot begin with alias/aws/. The alias/aws/ prefix is
 	// reserved for Amazon Web Services managed keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk).
+
 	// +kubebuilder:validation:Required
+
 	Name *string `json:"name"`
 	// Associates the alias with the specified customer managed key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk).
 	// The KMS key must be in the same Amazon Web Services Region.
@@ -48,12 +50,14 @@ type AliasSpec struct {
 	//
 	// For example:
 	//
-	//   - Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//    * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
 	//
-	//   - Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+	//    * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
 	//
 	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
-	TargetKeyID  *string                                  `json:"targetKeyID,omitempty"`
+
+	TargetKeyID *string `json:"targetKeyID,omitempty"`
+
 	TargetKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"targetKeyRef,omitempty"`
 }
 
@@ -64,7 +68,7 @@ type AliasStatus struct {
 	// constructed ARN for the resource
 	// +kubebuilder:validation:Optional
 	ACKResourceMetadata *ackv1alpha1.ResourceMetadata `json:"ackResourceMetadata"`
-	// All CRS managed by ACK have a common `Status.Conditions` member that
+	// All CRs managed by ACK have a common `Status.Conditions` member that
 	// contains a collection of `ackv1alpha1.Condition` objects that describe
 	// the various terminal states of the CR and its backend AWS service API
 	// resource
