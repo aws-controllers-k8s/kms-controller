@@ -15,12 +15,9 @@ package key
 
 import (
 	"context"
-	"fmt"
 	"strconv"
-	"strings"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
-	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	svcsdk "github.com/aws/aws-sdk-go-v2/service/kms"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -66,11 +63,6 @@ func (rm *resourceManager) customUpdate(
 	defer func() {
 		exit(err)
 	}()
-	if immutableFieldChanges := rm.getImmutableFieldChanges(delta); len(immutableFieldChanges) > 0 {
-		msg := fmt.Sprintf("Immutable Spec fields have been modified: %s",
-			strings.Join(immutableFieldChanges, ","))
-		return nil, ackerr.NewTerminalError(fmt.Errorf(msg))
-	}
 	updatedRes := rm.concreteResource(desired.DeepCopy())
 	updatedRes.SetStatus(latest)
 
