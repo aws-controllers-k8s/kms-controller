@@ -69,6 +69,9 @@ spec:
                   must use the XksKeyId parameter to specify an external key that serves as
                   key material for the KMS key.
                 type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
               description:
                 description: |-
                   A description of the KMS key. Use a description that helps you decide whether
@@ -80,6 +83,9 @@ spec:
 
                   To set or change the description after the key is created, use UpdateKeyDescription.
                 type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
               enableKeyRotation:
                 type: boolean
               keySpec:
@@ -124,6 +130,9 @@ spec:
                      * SM2 key pairs (encryption and decryption -or- signing and verification
                      -or- deriving shared secrets) SM2 (China Regions only)
                 type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
               keyUsage:
                 description: |-
                   Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
@@ -149,6 +158,9 @@ spec:
                      * For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
                      ENCRYPT_DECRYPT, SIGN_VERIFY, or KEY_AGREEMENT.
                 type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
               multiRegion:
                 description: |-
                   Creates a multi-Region primary key that you can replicate into other Amazon
@@ -174,6 +186,9 @@ spec:
                   a multi-Region key with imported key material. However, you cannot create
                   a multi-Region key in a custom key store.
                 type: boolean
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
               origin:
                 description: |-
                   The source of the key material for the KMS key. You cannot change the origin
@@ -196,6 +211,9 @@ spec:
                   parameter to identify the external key store and the XksKeyId parameter to
                   identify the associated external key. The KeySpec value must be SYMMETRIC_DEFAULT.
                 type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
               policy:
                 description: |-
                   The key policy to attach to the KMS key.
@@ -318,7 +336,7 @@ spec:
                 type: string
               conditions:
                 description: |-
-                  All CRS managed by ACK have a common `Status.Conditions` member that
+                  All CRs managed by ACK have a common `Status.Conditions` member that
                   contains a collection of `ackv1alpha1.Condition` objects that describe
                   the various terminal states of the CR and its backend AWS service API
                   resource
