@@ -48,6 +48,7 @@ type KeySpec struct {
 	// with the KMS key. When you create a KMS key in an external key store, you
 	// must use the XksKeyId parameter to specify an external key that serves as
 	// key material for the KMS key.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	CustomKeyStoreID *string `json:"customKeyStoreID,omitempty"`
 	// A description of the KMS key. Use a description that helps you decide whether
 	// the KMS key is appropriate for a task. The default value is an empty string
@@ -57,6 +58,7 @@ type KeySpec struct {
 	// field may be displayed in plaintext in CloudTrail logs and other output.
 	//
 	// To set or change the description after the key is created, use UpdateKeyDescription.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	Description       *string `json:"description,omitempty"`
 	EnableKeyRotation *bool   `json:"enableKeyRotation,omitempty"`
 	// Specifies the type of KMS key to create. The default value, SYMMETRIC_DEFAULT,
@@ -98,6 +100,8 @@ type KeySpec struct {
 	//
 	//   - SM2 key pairs (encryption and decryption -or- signing and verification
 	//     -or- deriving shared secrets) SM2 (China Regions only)
+	//
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	KeySpec *string `json:"keySpec,omitempty"`
 	// Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
 	// for which you can use the KMS key. The default value is ENCRYPT_DECRYPT.
@@ -121,6 +125,8 @@ type KeySpec struct {
 	//
 	//   - For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
 	//     ENCRYPT_DECRYPT, SIGN_VERIFY, or KEY_AGREEMENT.
+	//
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	KeyUsage *string `json:"keyUsage,omitempty"`
 	// Creates a multi-Region primary key that you can replicate into other Amazon
 	// Web Services Regions. You cannot change this value after you create the KMS
@@ -144,6 +150,7 @@ type KeySpec struct {
 	// You can create a symmetric or asymmetric multi-Region key, and you can create
 	// a multi-Region key with imported key material. However, you cannot create
 	// a multi-Region key in a custom key store.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	MultiRegion *bool `json:"multiRegion,omitempty"`
 	// The source of the key material for the KMS key. You cannot change the origin
 	// after you create the KMS key. The default is AWS_KMS, which means that KMS
@@ -164,6 +171,7 @@ type KeySpec struct {
 	// set this value to EXTERNAL_KEY_STORE. You must also use the CustomKeyStoreId
 	// parameter to identify the external key store and the XksKeyId parameter to
 	// identify the associated external key. The KeySpec value must be SYMMETRIC_DEFAULT.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	Origin *string `json:"origin,omitempty"`
 	// The key policy to attach to the KMS key.
 	//
@@ -227,7 +235,7 @@ type KeyStatus struct {
 	// constructed ARN for the resource
 	// +kubebuilder:validation:Optional
 	ACKResourceMetadata *ackv1alpha1.ResourceMetadata `json:"ackResourceMetadata"`
-	// All CRS managed by ACK have a common `Status.Conditions` member that
+	// All CRs managed by ACK have a common `Status.Conditions` member that
 	// contains a collection of `ackv1alpha1.Condition` objects that describe
 	// the various terminal states of the CR and its backend AWS service API
 	// resource

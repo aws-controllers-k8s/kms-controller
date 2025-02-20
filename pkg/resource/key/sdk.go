@@ -686,30 +686,3 @@ func (rm *resourceManager) terminalAWSError(err error) bool {
 	// No terminal_errors specified for this resource in generator config
 	return false
 }
-
-// getImmutableFieldChanges returns list of immutable fields from the
-func (rm *resourceManager) getImmutableFieldChanges(
-	delta *ackcompare.Delta,
-) []string {
-	var fields []string
-	if delta.DifferentAt("Spec.CustomKeyStoreID") {
-		fields = append(fields, "CustomKeyStoreID")
-	}
-	if delta.DifferentAt("Spec.Description") {
-		fields = append(fields, "Description")
-	}
-	if delta.DifferentAt("Spec.KeySpec") {
-		fields = append(fields, "KeySpec")
-	}
-	if delta.DifferentAt("Spec.KeyUsage") {
-		fields = append(fields, "KeyUsage")
-	}
-	if delta.DifferentAt("Spec.MultiRegion") {
-		fields = append(fields, "MultiRegion")
-	}
-	if delta.DifferentAt("Spec.Origin") {
-		fields = append(fields, "Origin")
-	}
-
-	return fields
-}
