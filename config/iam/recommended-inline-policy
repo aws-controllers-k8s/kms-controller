@@ -14,6 +14,7 @@
                 "kms:ScheduleKeyDeletion",
                 "kms:TagResource",
                 "kms:UntagResource",
+                "kms:EnableKeyRotation",
                 "iam:ListGroups",
                 "iam:ListRoles",
                 "iam:ListUsers",
