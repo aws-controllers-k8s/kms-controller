@@ -15,6 +15,7 @@
                 "kms:TagResource",
                 "kms:UntagResource",
                 "kms:EnableKeyRotation",
+                "kms:PutKeyPolicy",
                 "iam:ListGroups",
                 "iam:ListRoles",
                 "iam:ListUsers",
