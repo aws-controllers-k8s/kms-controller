@@ -256,7 +256,7 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return &resource{ko}, err
 	}
-	ko.Spec.Tags = FromACKTags(tags)
+	ko.Spec.Tags = fromACKTags(tags, nil)
 	keyRotationStatus, err := rm.getKeyRotationStatus(ctx, &resource{ko})
 	if err != nil || keyRotationStatus == nil {
 		return &resource{ko}, err
