@@ -34,7 +34,7 @@ func (rm *resourceManager) updateTags(ctx context.Context, r *resource) (err err
 	if err != nil {
 		return err
 	}
-	desiredTags := ToACKTags(r.ko.Spec.Tags)
+	desiredTags, _ := convertToOrderedACKTags(r.ko.Spec.Tags)
 	// First remove the keys that are not present in desired state anymore
 	tagKeysToRemove := removedTagKeys(desiredTags, latestTags)
 	if tagKeysToRemove != nil && len(tagKeysToRemove) > 0 {
