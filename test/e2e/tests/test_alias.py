@@ -87,6 +87,40 @@ def simple_alias(simple_key):
     except:
         pass
 
+@pytest.fixture
+def simple_alias_no_prefix(simple_key):
+    alias_name = random_suffix_name("simple-alias-no-prefix", 32)
+
+    replacements = REPLACEMENT_VALUES.copy()
+    replacements["ALIAS_NAME"] = alias_name
+    replacements["TARGET_KEY_ID"] = simple_key['KeyMetadata']['KeyId']
+
+    resource_data = load_kms_resource(
+        "alias_simple_no_prefix",
+        additional_replacements=replacements,
+    )
+    logging.debug(resource_data)
+
+    # Create the k8s resource
+    ref = k8s.CustomResourceReference(
+        CRD_GROUP, CRD_VERSION, ALIAS_RESOURCE_PLURAL,
+        alias_name, namespace="default",
+    )
+    k8s.create_custom_resource(ref, resource_data)
+    cr = k8s.wait_resource_consumed_by_controller(ref)
+
+    assert cr is not None
+    assert k8s.get_resource_exists(ref)
+
+    yield (ref, cr)
+
+    # Try to delete, if doesn't already exist
+    try:
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
+        assert deleted
+    except:
+        pass
+
 @service_marker
 @pytest.mark.canary
 class TestAlias:
@@ -115,6 +149,17 @@ class TestAlias:
         assert deleted
         time.sleep(DELETE_WAIT_AFTER_SECONDS)
         kms_validator.assert_alias_deleted(arn=alias_arn, target_key_id=another_key_id)
+
+    def test_create_delete_alias_no_prefix(self, simple_alias_no_prefix, another_key):
+        (ref, cr) = simple_alias_no_prefix
+
+        assert k8s.wait_on_condition(ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
+        assert 'arn' in cr['status']['ackResourceMetadata']
+        alias_arn = cr['status']['ackResourceMetadata']['arn']
+
+        _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
+        assert deleted
+        time.sleep(DELETE_WAIT_AFTER_SECONDS)
 
     def test_create_alias_ref(self):
         key_name = random_suffix_name("ref-key", 15)

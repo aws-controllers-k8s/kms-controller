@@ -104,14 +104,15 @@ func (rm *resourceManager) sdkFind(
 		}
 		aliases = append(aliases, resp.Aliases...)
 	}
+	aliasName := ensureAliasName(r.ko.Spec.Name)
 	// Filter resulting aliases, matching only the one with the name in the spec
 	matchingAliases := []svcsdktypes.AliasListEntry{}
 	for _, elem := range aliases {
-		if elem.AliasName == nil || r.ko.Spec.Name == nil {
+		if elem.AliasName == nil || aliasName == nil {
 			continue
 		}
 
-		if *elem.AliasName == *r.ko.Spec.Name {
+		if *elem.AliasName == *aliasName {
 			matchingAliases = append(matchingAliases, elem)
 		}
 	}
@@ -177,6 +178,7 @@ func (rm *resourceManager) sdkCreate(
 	if err != nil {
 		return nil, err
 	}
+	input.AliasName = ensureAliasName(input.AliasName)
 
 	var resp *svcsdk.CreateAliasOutput
 	_ = resp
@@ -228,6 +230,7 @@ func (rm *resourceManager) sdkUpdate(
 	if err != nil {
 		return nil, err
 	}
+	input.AliasName = ensureAliasName(input.AliasName)
 
 	var resp *svcsdk.UpdateAliasOutput
 	_ = resp
@@ -277,6 +280,8 @@ func (rm *resourceManager) sdkDelete(
 	if err != nil {
 		return nil, err
 	}
+	input.AliasName = ensureAliasName(input.AliasName)
+
 	var resp *svcsdk.DeleteAliasOutput
 	_ = resp
 	resp, err = rm.sdkapi.DeleteAlias(ctx, input)

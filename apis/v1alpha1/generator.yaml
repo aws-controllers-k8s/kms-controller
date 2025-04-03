@@ -23,8 +23,14 @@ resources:
           input_fields:
             AliasName: Name
     hooks:
+      sdk_create_post_build_request:
+        template_path: hooks/alias/sdk_create_post_build_request.go.tpl
       sdk_read_many_pre_set_output:
         template_path: hooks/alias/sdk_read_many_pre_set_output.go.tpl
+      sdk_update_post_build_request:
+        template_path: hooks/alias/sdk_update_post_build_request.go.tpl
+      sdk_delete_post_build_request:
+        template_path: hooks/alias/sdk_delete_post_build_request.go.tpl
     tags:
       ignore: true
   Key:
