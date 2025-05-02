@@ -15,6 +15,7 @@ package alias
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,7 +36,7 @@ func TestEnsureAliasName(t *testing.T) {
 			expected: stringPtr("alias/foo"),
 		},
 		{
-			// This one should not be 
+			// This one should not be
 			// expected either since
 			// aliasName is required
 			// field
@@ -44,7 +45,7 @@ func TestEnsureAliasName(t *testing.T) {
 			expected: nil,
 		},
 		{
-			// This one should be an error, 
+			// This one should be an error,
 			// but expected to be handled by
 			// the AWS API
 			name:     "just the prefix",
@@ -69,4 +70,3 @@ func TestEnsureAliasName(t *testing.T) {
 func stringPtr(s string) *string {
 	return &s
 }
-
