@@ -68,6 +68,8 @@ type GrantSpec struct {
 	// accounts, IAM users, IAM roles, federated users, and assumed role users.
 	// For help with the ARN syntax for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
 	// in the Identity and Access Management User Guide .
+	//
+	// Regex Pattern: `^[\w+=,.@:/-]+$`
 	// +kubebuilder:validation:Required
 	GranteePrincipal *string `json:"granteePrincipal"`
 	// Identifies the KMS key for the grant. The grant gives principals permission
@@ -100,6 +102,8 @@ type GrantSpec struct {
 	// without creating a new grant. Note that the returned grant token is unique
 	// with every CreateGrant request, even when a duplicate GrantId is returned.
 	// All grant tokens for the same grant ID can be used interchangeably.
+	//
+	// Regex Pattern: `^[a-zA-Z0-9:/_-]+$`
 	Name *string `json:"name,omitempty"`
 	// A list of operations that the grant permits.
 	//
@@ -125,6 +129,8 @@ type GrantSpec struct {
 	// permission to retire the grant or revoke the grant. For details, see RevokeGrant
 	// and Retiring and revoking grants (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#grant-delete)
 	// in the Key Management Service Developer Guide.
+	//
+	// Regex Pattern: `^[\w+=,.@:/-]+$`
 	RetiringPrincipal *string `json:"retiringPrincipal,omitempty"`
 }
 

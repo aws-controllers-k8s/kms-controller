@@ -51,6 +51,8 @@ spec:
                   alphanumeric characters, forward slashes (/), underscores (_), and dashes
                   (-). The alias name cannot begin with alias/aws/. The alias/aws/ prefix is
                   reserved for Amazon Web Services managed keys (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk).
+
+                  Regex Pattern: `^[a-zA-Z0-9:/_-]+$`
                 type: string
               targetKeyID:
                 description: |-
