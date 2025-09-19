@@ -107,19 +107,20 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 
 // PopulateResourceFromAnnotation populates the fields passed from adoption annotation
 func (r *resource) PopulateResourceFromAnnotation(fields map[string]string) error {
-	tmp, ok := fields["grantID"]
+	f0, ok := fields["grantID"]
 	if !ok {
 		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: grantID"))
 	}
-	r.ko.Status.GrantID = &tmp
+	r.ko.Status.GrantID = &f0
+	f2, ok := fields["keyID"]
+	if !ok {
+		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: keyID"))
+	}
+	r.ko.Spec.KeyID = &f2
 
 	f1, f1ok := fields["granteePrincipal"]
 	if f1ok {
 		r.ko.Spec.GranteePrincipal = aws.String(f1)
-	}
-	f2, f2ok := fields["keyID"]
-	if f2ok {
-		r.ko.Spec.KeyID = aws.String(f2)
 	}
 
 	return nil
