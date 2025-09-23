@@ -20,7 +20,7 @@ import pytest
 import time
 
 from acktest.k8s import resource as k8s
-from acktest.k8s.condition import CONDITION_TYPE_RESOURCE_SYNCED, CONDITION_TYPE_TERMINAL
+from acktest.k8s.condition import CONDITION_TYPE_READY, CONDITION_TYPE_TERMINAL
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_kms_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
@@ -86,7 +86,7 @@ class TestGrant:
         (ref, cr) = simple_grant
         key_id = simple_key['KeyMetadata']['KeyId']
 
-        assert k8s.wait_on_condition(ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, CONDITION_TYPE_READY, "True", wait_periods=10)
         assert 'grantID' in cr['status']
         grant_id = cr['status']['grantID']
 

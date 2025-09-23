@@ -20,7 +20,7 @@ import pytest
 import time
 
 from acktest.k8s import resource as k8s
-from acktest.k8s.condition import CONDITION_TYPE_RESOURCE_SYNCED, CONDITION_TYPE_REFERENCES_RESOLVED
+from acktest.k8s.condition import CONDITION_TYPE_READY, CONDITION_TYPE_REFERENCES_RESOLVED
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_kms_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
@@ -128,7 +128,7 @@ class TestAlias:
         (ref, cr) = simple_alias
         another_key_id = another_key['KeyMetadata']['KeyId']
 
-        assert k8s.wait_on_condition(ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, CONDITION_TYPE_READY, "True", wait_periods=10)
         assert 'arn' in cr['status']['ackResourceMetadata']
         alias_arn = cr['status']['ackResourceMetadata']['arn']
 
@@ -141,7 +141,7 @@ class TestAlias:
 
         k8s.patch_custom_resource(ref, updates)
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
-        assert k8s.wait_on_condition(ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, CONDITION_TYPE_READY, "True", wait_periods=10)
         alias = kms_validator.get_alias(arn=alias_arn, target_key_id=another_key_id)
         assert alias is not None, f"Alias should not be None for key id {another_key_id}"
 
@@ -153,7 +153,7 @@ class TestAlias:
     def test_create_delete_alias_no_prefix(self, simple_alias_no_prefix, another_key):
         (ref, cr) = simple_alias_no_prefix
 
-        assert k8s.wait_on_condition(ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, CONDITION_TYPE_READY, "True", wait_periods=10)
         assert 'arn' in cr['status']['ackResourceMetadata']
         alias_arn = cr['status']['ackResourceMetadata']['arn']
 
@@ -206,8 +206,8 @@ class TestAlias:
 
         time.sleep(CREATE_WAIT_AFTER_SECONDS)
 
-        assert k8s.wait_on_condition(key_ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
-        assert k8s.wait_on_condition(alias_ref, CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=10)
+        assert k8s.wait_on_condition(key_ref, CONDITION_TYPE_READY, "True", wait_periods=10)
+        assert k8s.wait_on_condition(alias_ref, CONDITION_TYPE_READY, "True", wait_periods=10)
 
         assert k8s.wait_on_condition(alias_ref, CONDITION_TYPE_REFERENCES_RESOLVED, "True", wait_periods=10)
 
