@@ -209,7 +209,7 @@ class TestAlias:
         assert k8s.wait_on_condition(key_ref, CONDITION_TYPE_READY, "True", wait_periods=10)
         assert k8s.wait_on_condition(alias_ref, CONDITION_TYPE_READY, "True", wait_periods=10)
 
-        assert k8s.wait_on_condition(alias_ref, CONDITION_TYPE_REFERENCES_RESOLVED, "True", wait_periods=10)
+        time.sleep(CREATE_WAIT_AFTER_SECONDS)
 
         alias_cr = k8s.get_resource(alias_ref)
         alias_arn = alias_cr['status']['ackResourceMetadata']['arn']

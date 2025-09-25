@@ -19,8 +19,7 @@ import logging
 import pytest
 import time
 
-from acktest.k8s import resource as k8s
-from acktest.k8s.condition import CONDITION_TYPE_READY, CONDITION_TYPE_TERMINAL
+from acktest.k8s import resource as k8s, condition
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_kms_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
@@ -86,7 +85,7 @@ class TestGrant:
         (ref, cr) = simple_grant
         key_id = simple_key['KeyMetadata']['KeyId']
 
-        assert k8s.wait_on_condition(ref, CONDITION_TYPE_READY, "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, condition.CONDITION_TYPE_READY, "True", wait_periods=10)
         assert 'grantID' in cr['status']
         grant_id = cr['status']['grantID']
 
@@ -104,7 +103,8 @@ class TestGrant:
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
         # Grant resource does not support update operation, so the terminal condition should be set
         # on the resource
-        assert k8s.wait_on_condition(ref, CONDITION_TYPE_TERMINAL, "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, condition.CONDITION_TYPE_READY, "False", wait_periods=10)
+        condition.assert_terminal(ref)
 
         _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
         assert deleted
