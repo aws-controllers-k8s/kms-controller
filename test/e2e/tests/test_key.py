@@ -240,7 +240,7 @@ class TestKey:
 
         k8s.patch_custom_resource(ref, updates)
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, "Ready", "True", wait_periods=10)
 
         key_policy = kms_client.get_key_policy(KeyId=key_id, PolicyName='default')
         assert 'updated-key-policy' in key_policy['Policy']
@@ -260,7 +260,7 @@ class TestKey:
 
     def test_update_tags(self, kms_client, simple_key):
         (ref, cr) = simple_key
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, "Ready", "True", wait_periods=10)
 
         assert 'keyID' in cr['status']
         key_id = cr['status']['keyID']
@@ -285,7 +285,7 @@ class TestKey:
                 }
         k8s.patch_custom_resource(ref, updates)
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, "Ready", "True", wait_periods=10)
 
         key_tags = kms_client.list_resource_tags(KeyId=key_id)['Tags']
         tags.assert_ack_system_tags(
@@ -317,7 +317,7 @@ class TestKey:
         }
         k8s.patch_custom_resource(ref, updates)
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, "Ready", "True", wait_periods=10)
 
         key_tags = kms_client.list_resource_tags(KeyId=key_id)['Tags']
         tags.assert_ack_system_tags(
@@ -349,7 +349,7 @@ class TestKey:
         }
         k8s.patch_custom_resource(ref, updates)
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+        assert k8s.wait_on_condition(ref, "Ready", "True", wait_periods=10)
 
         key_tags = kms_client.list_resource_tags(KeyId=key_id)['Tags']
         tags.assert_ack_system_tags(
