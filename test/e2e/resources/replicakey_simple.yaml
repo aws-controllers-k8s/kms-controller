@@ -1,0 +1,10 @@
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: ReplicaKey
+metadata:
+  name: $REPLICA_KEY_NAME
+spec:
+  keyRef:
+    from:
+      name: $PRIMARY_KEY_NAME
+  replicaRegion: $REPLICA_REGION
+  description: "Replica key created by ACK tests"

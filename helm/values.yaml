@@ -148,6 +148,7 @@ reconcile:
     - Alias
     - Grant
     - Key
+    - ReplicaKey
 
 serviceAccount:
   # Specifies whether a service account should be created

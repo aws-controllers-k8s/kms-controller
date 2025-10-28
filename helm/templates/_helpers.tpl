@@ -75,6 +75,7 @@ rules:
   - aliases
   - grants
   - keys
+  - replicakeys
   verbs:
   - create
   - delete
@@ -89,6 +90,7 @@ rules:
   - aliases/status
   - grants/status
   - keys/status
+  - replicakeys/status
   verbs:
   - get
   - patch

@@ -1,0 +1,7 @@
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+  name: $KEY_NAME
+spec:
+  description: "Multi-region primary key created by ACK tests"
+  multiRegion: true
