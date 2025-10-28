@@ -30,7 +30,8 @@ DELETE_WAIT_PERIOD_LENGTH_SECONDS = 10
 REPLICA_KEY_RESOURCE_PLURAL = "replicakeys"
 
 # For testing purposes, we'll use a secondary region
-REPLICA_REGION = "us-west-2"
+# NOTE: Must be different from the controller's region (us-west-2)
+REPLICA_REGION = "us-east-1"
 
 
 @pytest.fixture
@@ -102,6 +103,9 @@ class TestReplicaKey:
 
     # Verify the replica key was created
     assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
+
+    # Get the latest resource state after sync
+    cr = k8s.get_resource(ref)
 
     # ReplicaKey status fields are nested in replicaKeyMetadata
     assert 'replicaKeyMetadata' in cr['status']
