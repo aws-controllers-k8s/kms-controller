@@ -42,6 +42,7 @@ import (
 	_ "github.com/aws-controllers-k8s/kms-controller/pkg/resource/alias"
 	_ "github.com/aws-controllers-k8s/kms-controller/pkg/resource/grant"
 	_ "github.com/aws-controllers-k8s/kms-controller/pkg/resource/key"
+	_ "github.com/aws-controllers-k8s/kms-controller/pkg/resource/replica_key"
 
 	"github.com/aws-controllers-k8s/kms-controller/pkg/version"
 )

@@ -97,6 +97,10 @@ resources:
     update_operation:
       custom_method_name: updateNotSupported
 operations:
+  ReplicateKey:
+    operation_type:
+      - Create
+    resource_name: ReplicaKey
   ScheduleKeyDeletion:
     operation_type:
       - Delete
