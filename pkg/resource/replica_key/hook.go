@@ -42,19 +42,15 @@ func (rm *resourceManager) sdkFind(
 		exit(err)
 	}()
 
-	// Check if we have a KeyID to look up
-	// The KeyID should be in Status.ReplicaKeyMetadata.KeyID after creation
-	var keyID *string
-	if r.ko.Status.ReplicaKeyMetadata != nil && r.ko.Status.ReplicaKeyMetadata.KeyID != nil {
-		keyID = r.ko.Status.ReplicaKeyMetadata.KeyID
-	} else if r.ko.Spec.KeyID != nil {
-		// Fallback to Spec.KeyID if status doesn't have it yet
-		keyID = r.ko.Spec.KeyID
-	}
-
-	if keyID == nil {
+	// Check if we have a replica KeyID to look up.
+	// Note: Spec.KeyID contains the PRIMARY key ID (input to ReplicateKey),
+	// not the replica key ID. We can only look up the replica key after it's
+	// been created and its ID is stored in Status.ReplicaKeyMetadata.KeyID.
+	if r.ko.Status.ReplicaKeyMetadata == nil || r.ko.Status.ReplicaKeyMetadata.KeyID == nil {
 		return nil, ackerr.NotFound
 	}
+
+	keyID := r.ko.Status.ReplicaKeyMetadata.KeyID
 
 	input := &svcsdk.DescribeKeyInput{
 		KeyId: keyID,
