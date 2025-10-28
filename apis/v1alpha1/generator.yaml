@@ -71,11 +71,38 @@ resources:
       ignore: true
     update_operation:
       custom_method_name: updateNotSupported
+  ReplicaKey:
+    fields:
+      KeyId:
+        is_required: true
+        references:
+          resource: Key
+          path: Status.KeyID
+      ReplicaRegion:
+        is_required: true
+        is_immutable: true
+      Description:
+        is_immutable: true
+      BypassPolicyLockoutSafetyCheck:
+        is_immutable: true
+    renames:
+      operations:
+        ReplicateKey:
+          input_fields:
+            KeyId: KeyId
+            ReplicaRegion: ReplicaRegion
+    tags:
+      key_name: TagKey
+      value_name: TagValue
+    update_operation:
+      custom_method_name: updateNotSupported
 operations:
   ScheduleKeyDeletion:
     operation_type:
       - Delete
-    resource_name: Key
+    resource_name:
+      - Key
+      - ReplicaKey
   RevokeGrant:
     operation_type:
       - Delete
