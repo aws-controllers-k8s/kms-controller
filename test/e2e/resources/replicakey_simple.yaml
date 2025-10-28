@@ -3,8 +3,6 @@ kind: ReplicaKey
 metadata:
   name: $REPLICA_KEY_NAME
 spec:
-  keyRef:
-    from:
-      name: $PRIMARY_KEY_NAME
+  keyID: $PRIMARY_KEY_ID
   replicaRegion: $REPLICA_REGION
   description: "Replica key created by ACK tests"

@@ -27,52 +27,28 @@ DELETE_WAIT_AFTER_SECONDS = 30
 DELETE_WAIT_PERIODS = 3
 DELETE_WAIT_PERIOD_LENGTH_SECONDS = 10
 
-KEY_RESOURCE_PLURAL = "keys"
 REPLICA_KEY_RESOURCE_PLURAL = "replicakeys"
 
 # For testing purposes, we'll use a secondary region
-# Adjust this based on your test environment
 REPLICA_REGION = "us-west-2"
 
 
 @pytest.fixture
 def multi_region_primary_key(kms_client):
-  """Creates a multi-region primary key for replication tests"""
-  key_name = random_suffix_name("mr-primary-key", 32)
-
-  replacements = REPLACEMENT_VALUES.copy()
-  replacements["KEY_NAME"] = key_name
-
-  resource_data = load_kms_resource(
-    "key_multiregion",
-    additional_replacements=replacements,
+  """Creates a multi-region primary key using boto3 directly"""
+  # Create a multi-region primary key via AWS SDK
+  key = kms_client.create_key(
+    MultiRegion=True,
+    Description="Multi-region primary key for ReplicaKey tests"
   )
-  logging.debug(resource_data)
 
-  # Create the k8s resource
-  ref = k8s.CustomResourceReference(
-    CRD_GROUP, CRD_VERSION, KEY_RESOURCE_PLURAL,
-    key_name, namespace="default",
-  )
-  k8s.create_custom_resource(ref, resource_data)
-  cr = k8s.wait_resource_consumed_by_controller(ref)
+  key_id = key['KeyMetadata']['KeyId']
 
-  assert cr is not None
-  assert k8s.get_resource_exists(ref)
-  assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
-
-  # Verify it's a multi-region key
-  assert 'keyID' in cr['status']
-  key_id = cr['status']['keyID']
-  key_metadata = kms_client.describe_key(KeyId=key_id)
-  assert key_metadata['KeyMetadata']['MultiRegion'] == True
-
-  yield (ref, cr, key_name, key_id)
+  yield key
 
   # Cleanup
   try:
-    _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
-    assert deleted
+    kms_client.schedule_key_deletion(KeyId=key_id, PendingWindowInDays=7)
   except:
     pass
 
@@ -80,13 +56,12 @@ def multi_region_primary_key(kms_client):
 @pytest.fixture
 def simple_replica_key(multi_region_primary_key):
   """Creates a simple replica key from a multi-region primary key"""
-  (primary_ref, primary_cr, primary_key_name, primary_key_id) = multi_region_primary_key
-
+  primary_key_id = multi_region_primary_key['KeyMetadata']['KeyId']
   replica_key_name = random_suffix_name("simple-replica", 32)
 
   replacements = REPLACEMENT_VALUES.copy()
   replacements["REPLICA_KEY_NAME"] = replica_key_name
-  replacements["PRIMARY_KEY_NAME"] = primary_key_name
+  replacements["PRIMARY_KEY_ID"] = primary_key_id
   replacements["REPLICA_REGION"] = REPLICA_REGION
 
   resource_data = load_kms_resource(
