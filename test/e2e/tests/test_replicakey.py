@@ -127,17 +127,20 @@ class TestReplicaKey:
 
     # Verify the replica key was created
     assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=10)
-    assert 'keyID' in cr['status']
-    replica_key_id = cr['status']['keyID']
+
+    # ReplicaKey status fields are nested in replicaKeyMetadata
+    assert 'replicaKeyMetadata' in cr['status']
+    assert 'keyID' in cr['status']['replicaKeyMetadata']
+    replica_key_id = cr['status']['replicaKeyMetadata']['keyID']
 
     # Verify the replica key is in the correct state
-    assert 'keyState' in cr['status']
+    assert 'keyState' in cr['status']['replicaKeyMetadata']
     # Key might be in Creating or Enabled state
-    assert cr['status']['keyState'] in ['Creating', 'Enabled']
+    assert cr['status']['replicaKeyMetadata']['keyState'] in ['Creating', 'Enabled']
 
     # Verify multi-region configuration
-    if 'multiRegionConfiguration' in cr['status']:
-      config = cr['status']['multiRegionConfiguration']
+    if 'multiRegionConfiguration' in cr['status']['replicaKeyMetadata']:
+      config = cr['status']['replicaKeyMetadata']['multiRegionConfiguration']
       assert config is not None
       # The replica should reference the primary key
       if 'primaryKey' in config:
