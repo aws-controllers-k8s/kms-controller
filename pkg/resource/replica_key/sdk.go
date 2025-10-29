@@ -52,11 +52,16 @@ var (
 	_ = &aws.Config{}
 )
 
-// sdkFind is implemented in hook.go to use DescribeKey API.
-// The code generator cannot auto-generate this because ReplicateKey
-// has no corresponding read operation in the KMS API. Replica keys are
-// read using the standard DescribeKey operation.
-// See: pkg/resource/replica_key/hook.go
+// sdkFind returns SDK-specific information about a supplied resource
+func (rm *resourceManager) sdkFind(
+	ctx context.Context,
+	r *resource,
+) (*resource, error) {
+	// Believe it or not, there are API resources that can be created but there
+	// is no read operation. Point in case: RDS' CreateDBInstanceReadReplica
+	// has no corresponding read operation that I know of...
+	return nil, ackerr.NotImplemented
+}
 
 // sdkCreate creates the supplied resource in the backend AWS service API and
 // returns a copy of the resource with resource fields (in both Spec and

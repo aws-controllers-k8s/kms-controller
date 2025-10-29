@@ -29,15 +29,16 @@ import (
 	svcapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
 )
 
-// sdkFind returns SDK-specific information about a supplied resource by using
+// customFind returns SDK-specific information about a supplied resource by using
 // the DescribeKey API operation. This is implemented in hook.go because the
 // code generator cannot auto-generate a read operation for ReplicateKey.
-func (rm *resourceManager) sdkFind(
+// The generated sdkFind in sdk.go calls this custom method.
+func (rm *resourceManager) customFind(
 	ctx context.Context,
 	r *resource,
 ) (latest *resource, err error) {
 	rlog := ackrtlog.FromContext(ctx)
-	exit := rlog.Trace("rm.sdkFind")
+	exit := rlog.Trace("rm.customFind")
 	defer func() {
 		exit(err)
 	}()
