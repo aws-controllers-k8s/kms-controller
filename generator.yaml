@@ -94,7 +94,7 @@ resources:
     tags:
       key_name: TagKey
       value_name: TagValue
-    read_operation:
+    find_operation:
       custom_method_name: customFind
     update_operation:
       custom_method_name: updateNotSupported
