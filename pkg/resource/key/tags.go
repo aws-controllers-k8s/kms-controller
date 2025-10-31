@@ -16,6 +16,7 @@
 package key
 
 import (
+	"slices"
 	"strings"
 
 	acktags "github.com/aws-controllers-k8s/runtime/pkg/tags"
