@@ -185,16 +185,6 @@ type ReplicaKeyStatus struct {
 	// and other replica keys.
 	// +kubebuilder:validation:Optional
 	ReplicaKeyMetadata *KeyMetadata `json:"replicaKeyMetadata,omitempty"`
-	// The key policy of the new replica key. The value is a key policy document
-	// in JSON format.
-	//
-	// Regex Pattern: `^[\u0009\u000A\u000D\u0020-\u00FF]+$`
-	// +kubebuilder:validation:Optional
-	ReplicaPolicy *string `json:"replicaPolicy,omitempty"`
-	// The tags on the new replica key. The value is a list of tag key and tag value
-	// pairs.
-	// +kubebuilder:validation:Optional
-	ReplicaTags []*Tag `json:"replicaTags,omitempty"`
 }
 
 // ReplicaKey is the Schema for the ReplicaKeys API

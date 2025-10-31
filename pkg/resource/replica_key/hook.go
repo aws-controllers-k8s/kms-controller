@@ -16,7 +16,7 @@ package replica_key
 import (
 	"context"
 	"errors"
-	"fmt"
+	"strconv"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
@@ -28,6 +28,29 @@ import (
 
 	svcapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
 )
+
+const (
+	DefaultDeletePendingWindowInDays = int64(30)
+)
+
+// GetDeletePendingWindowInDays returns the pending window (in days) as
+// determined by the annotation on the object, or the default value otherwise.
+func GetDeletePendingWindowInDays(
+	m *metav1.ObjectMeta,
+) int64 {
+	resAnnotations := m.GetAnnotations()
+	pendingWindow, ok := resAnnotations[svcapitypes.AnnotationDeletePendingWindow]
+	if !ok {
+		return DefaultDeletePendingWindowInDays
+	}
+
+	pendingWindowInt, err := strconv.Atoi(pendingWindow)
+	if err != nil {
+		return DefaultDeletePendingWindowInDays
+	}
+
+	return int64(pendingWindowInt)
+}
 
 // customFind returns SDK-specific information about a supplied resource by using
 // the DescribeKey API operation. This is implemented in hook.go because the
@@ -191,17 +214,57 @@ func (rm *resourceManager) customFind(
 	}
 
 	rm.setStatusDefaults(ko)
+
+	// Sync Policy and Tags back to Spec for drift detection
+	// This allows ACK to detect if someone changes policy/tags outside of Kubernetes
+	policy, err := rm.getPolicy(ctx, &resource{ko})
+	if err != nil {
+		return nil, err
+	}
+	ko.Spec.Policy = policy
+
+	tags, err := rm.listTags(ctx, &resource{ko})
+	if err != nil {
+		return nil, err
+	}
+	ko.Spec.Tags = fromACKTags(tags, nil)
+
 	return &resource{ko}, nil
 }
 
-// updateNotSupported returns a terminal error because KMS replica key
-// resource does not support updates.
-func (rm *resourceManager) updateNotSupported(ctx context.Context,
+// customUpdate is the implementation of update operation for KMS ReplicaKey resource.
+// This operation supports updating 'Policy' and 'Tags' fields.
+// Other fields are immutable and cannot be updated after creation.
+func (rm *resourceManager) customUpdate(
+	ctx context.Context,
 	desired *resource,
 	latest *resource,
-	diffReporter *ackcompare.Delta,
-) (*resource, error) {
-	return nil, ackerr.NewTerminalError(
-		fmt.Errorf("replica key resource does not support updates"),
-	)
+	delta *ackcompare.Delta,
+) (updated *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.customUpdate")
+	defer func() {
+		exit(err)
+	}()
+
+	updatedRes := rm.concreteResource(desired.DeepCopy())
+	updatedRes.SetStatus(latest)
+
+	if delta.DifferentAt("Spec.Policy") {
+		if updatedRes.ko.Spec.Policy != nil && *updatedRes.ko.Spec.Policy != "" {
+			if err = rm.updatePolicy(ctx, updatedRes); err != nil {
+				return updatedRes, err
+			}
+		}
+	}
+
+	if delta.DifferentAt("Spec.Tags") {
+		err = rm.updateTags(ctx, updatedRes)
+		if err != nil {
+			return updatedRes, err
+		}
+	}
+
+	rm.setStatusDefaults(updatedRes.ko)
+	return updatedRes, nil
 }

@@ -390,35 +390,6 @@ spec:
                     format: date-time
                     type: string
                 type: object
-              replicaPolicy:
-                description: |-
-                  The key policy of the new replica key. The value is a key policy document
-                  in JSON format.
-
-                  Regex Pattern: `^[\u0009\u000A\u000D\u0020-\u00FF]+$`
-                type: string
-              replicaTags:
-                description: |-
-                  The tags on the new replica key. The value is a list of tag key and tag value
-                  pairs.
-                items:
-                  description: |-
-                    A key-value pair. A tag consists of a tag key and a tag value. Tag keys and
-                    tag values are both required, but tag values can be empty (null) strings.
-
-                    Do not include confidential or sensitive information in this field. This
-                    field may be displayed in plaintext in CloudTrail logs and other output.
-
-                    For information about the rules that apply to tag keys and tag values, see
-                    User-Defined Tag Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
-                    in the Amazon Web Services Billing and Cost Management User Guide.
-                  properties:
-                    tagKey:
-                      type: string
-                    tagValue:
-                      type: string
-                  type: object
-                type: array
             type: object
         type: object
     served: true

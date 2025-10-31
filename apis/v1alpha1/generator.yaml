@@ -91,13 +91,19 @@ resources:
           input_fields:
             KeyId: KeyId
             ReplicaRegion: ReplicaRegion
+          output_fields:
+            ReplicaTags: Tags
+            ReplicaPolicy: Policy
+    hooks:
+      sdk_delete_post_build_request:
+        template_path: hooks/replica_key/sdk_delete_post_build_request.go.tpl
     tags:
       key_name: TagKey
       value_name: TagValue
     find_operation:
       custom_method_name: customFind
     update_operation:
-      custom_method_name: updateNotSupported
+      custom_method_name: customUpdate
 operations:
   ReplicateKey:
     operation_type:

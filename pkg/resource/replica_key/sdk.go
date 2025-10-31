@@ -206,9 +206,9 @@ func (rm *resourceManager) sdkCreate(
 		ko.Status.ReplicaKeyMetadata = nil
 	}
 	if resp.ReplicaPolicy != nil {
-		ko.Status.ReplicaPolicy = resp.ReplicaPolicy
+		ko.Spec.Policy = resp.ReplicaPolicy
 	} else {
-		ko.Status.ReplicaPolicy = nil
+		ko.Spec.Policy = nil
 	}
 	if resp.ReplicaTags != nil {
 		f2 := []*svcapitypes.Tag{}
@@ -222,9 +222,9 @@ func (rm *resourceManager) sdkCreate(
 			}
 			f2 = append(f2, f2elem)
 		}
-		ko.Status.ReplicaTags = f2
+		ko.Spec.Tags = f2
 	} else {
-		ko.Status.ReplicaTags = nil
+		ko.Spec.Tags = nil
 	}
 
 	rm.setStatusDefaults(ko)
@@ -280,7 +280,7 @@ func (rm *resourceManager) sdkUpdate(
 	latest *resource,
 	delta *ackcompare.Delta,
 ) (*resource, error) {
-	return rm.updateNotSupported(ctx, desired, latest, delta)
+	return rm.customUpdate(ctx, desired, latest, delta)
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API
@@ -297,6 +297,7 @@ func (rm *resourceManager) sdkDelete(
 	if err != nil {
 		return nil, err
 	}
+	input.PendingWindowInDays = aws.Int32(int32(GetDeletePendingWindowInDays(&r.ko.ObjectMeta)))
 	var resp *svcsdk.ScheduleKeyDeletionOutput
 	_ = resp
 	resp, err = rm.sdkapi.ScheduleKeyDeletion(ctx, input)

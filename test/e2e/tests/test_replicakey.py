@@ -13,6 +13,7 @@
 
 """Integration tests for the KMS ReplicaKey resource
 """
+import boto3
 import logging
 import pytest
 import time
@@ -124,6 +125,33 @@ class TestReplicaKey:
       # The replica should reference the primary key
       if 'primaryKey' in config:
         assert primary_key_id in config['primaryKey']['arn']
+
+    # Create a KMS client in the replica region to verify the key
+    replica_kms_client = boto3.client('kms', region_name=REPLICA_REGION)
+    aws_replica_key = replica_kms_client.describe_key(KeyId=replica_key_id)
+
+    # Verify AWS resource properties
+    assert aws_replica_key is not None
+    assert 'KeyMetadata' in aws_replica_key
+    metadata = aws_replica_key['KeyMetadata']
+
+    # Verify the key is multi-region
+    assert metadata['MultiRegion'] is True
+
+    # Verify multi-region configuration
+    assert 'MultiRegionConfiguration' in metadata
+    mr_config = metadata['MultiRegionConfiguration']
+    assert mr_config['MultiRegionKeyType'] == 'REPLICA'
+
+    # Verify the replica references the correct primary key
+    assert 'PrimaryKey' in mr_config
+    assert primary_key_id in mr_config['PrimaryKey']['Arn']
+
+    # Verify the key state (should be Creating or Enabled)
+    assert metadata['KeyState'] in ['Creating', 'Enabled']
+
+    # Verify the key is in the correct region
+    assert mr_config['PrimaryKey']['Region'] != REPLICA_REGION
 
     # Delete the replica key
     _, deleted = k8s.delete_custom_resource(ref, DELETE_WAIT_PERIODS, DELETE_WAIT_PERIOD_LENGTH_SECONDS)
