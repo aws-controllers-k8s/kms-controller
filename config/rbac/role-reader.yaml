@@ -12,6 +12,7 @@ rules:
   - aliases
   - grants
   - keys
+  - replicakeys
   verbs:
   - get
   - list

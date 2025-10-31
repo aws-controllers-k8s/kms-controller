@@ -19,6 +19,7 @@ rules:
   - aliases
   - grants
   - keys
+  - replicakeys
   verbs:
   - create
   - delete
@@ -33,6 +34,7 @@ rules:
   - aliases
   - grants
   - keys
+  - replicakeys
   verbs:
   - get
   - patch
