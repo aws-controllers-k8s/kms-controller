@@ -17,16 +17,15 @@ package alias
 
 import (
 	"bytes"
-	"reflect"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	acktags "github.com/aws-controllers-k8s/runtime/pkg/tags"
+	"k8s.io/apimachinery/pkg/api/equality"
 )
 
 // Hack to avoid import errors during build...
 var (
 	_ = &bytes.Buffer{}
-	_ = &reflect.Method{}
 	_ = &acktags.Tags{}
 )
 
@@ -57,7 +56,7 @@ func newResourceDelta(
 			delta.Add("Spec.TargetKeyID", a.ko.Spec.TargetKeyID, b.ko.Spec.TargetKeyID)
 		}
 	}
-	if !reflect.DeepEqual(a.ko.Spec.TargetKeyRef, b.ko.Spec.TargetKeyRef) {
+	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.TargetKeyRef, b.ko.Spec.TargetKeyRef) {
 		delta.Add("Spec.TargetKeyRef", a.ko.Spec.TargetKeyRef, b.ko.Spec.TargetKeyRef)
 	}
 
