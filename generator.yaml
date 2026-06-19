@@ -35,6 +35,8 @@ resources:
       ignore: true
   Key:
     fields:
+      Policy:
+        is_iam_policy: true
       Origin:
         is_immutable: true
       MultiRegion:
