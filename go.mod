@@ -3,8 +3,7 @@ module github.com/aws-controllers-k8s/kms-controller
 go 1.25.0
 
 require (
-	github.com/aws-controllers-k8s/runtime v0.62.0
-	github.com/aws/aws-sdk-go v1.49.0
+	github.com/aws-controllers-k8s/runtime v0.63.0
 	github.com/aws/aws-sdk-go-v2 v1.34.0
 	github.com/aws/aws-sdk-go-v2/service/kms v1.37.14
 	github.com/aws/smithy-go v1.22.2

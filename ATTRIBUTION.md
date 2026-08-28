@@ -21,7 +21,6 @@ distributed. For any package *NOT* distributed under the terms of the Apache
 License version 2.0, we include the full text of the package's License below.
 
 * `github.com/aws-controllers-k8s/runtime`
-* `github.com/aws/aws-sdk-go`
 * `github.com/aws/aws-sdk-go-v2`
 * `github.com/aws/aws-sdk-go-v2/service/kms`
 * `github.com/aws/smithy-go`
@@ -1530,19 +1529,6 @@ License Identifier: Apache-2.0
 
 License Identifier: Apache-2.0
 
-### github.com/aws/aws-sdk-go
-
-License Identifier: Apache-2.0
-
-Subdependencies:
-* `github.com/jmespath/go-jmespath`
-* `golang.org/x/net`
-* `golang.org/x/text`
-
-#### github.com/jmespath/go-jmespath
-
-License Identifier: Apache-2.0
-
 ### github.com/aws/aws-sdk-go-v2
 
 License Identifier: Apache-2.0
@@ -1550,6 +1536,12 @@ License Identifier: Apache-2.0
 Subdependencies:
 * `github.com/aws/smithy-go`
 * `github.com/jmespath/go-jmespath`
+
+
+
+#### github.com/jmespath/go-jmespath
+
+License Identifier: Apache-2.0
 
 ### github.com/aws/aws-sdk-go-v2/service/kms
 
