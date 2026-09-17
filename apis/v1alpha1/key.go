@@ -84,23 +84,22 @@ type KeySpec struct {
 	//
 	// KMS supports the following key specs for KMS keys:
 	//
-	//   - Symmetric encryption key (default) SYMMETRIC_DEFAULT
+	//    * Symmetric encryption key (default) SYMMETRIC_DEFAULT
 	//
-	//   - HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
+	//    * HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
 	//
-	//   - Asymmetric RSA key pairs (encryption and decryption -or- signing and
-	//     verification) RSA_2048 RSA_3072 RSA_4096
+	//    * Asymmetric RSA key pairs (encryption and decryption -or- signing and
+	//    verification) RSA_2048 RSA_3072 RSA_4096
 	//
-	//   - Asymmetric NIST-recommended elliptic curve key pairs (signing and verification
-	//     -or- deriving shared secrets) ECC_NIST_P256 (secp256r1) ECC_NIST_P384
-	//     (secp384r1) ECC_NIST_P521 (secp521r1)
+	//    * Asymmetric NIST-recommended elliptic curve key pairs (signing and verification
+	//    -or- deriving shared secrets) ECC_NIST_P256 (secp256r1) ECC_NIST_P384
+	//    (secp384r1) ECC_NIST_P521 (secp521r1)
 	//
-	//   - Other asymmetric elliptic curve key pairs (signing and verification)
-	//     ECC_SECG_P256K1 (secp256k1), commonly used for cryptocurrencies.
+	//    * Other asymmetric elliptic curve key pairs (signing and verification)
+	//    ECC_SECG_P256K1 (secp256k1), commonly used for cryptocurrencies.
 	//
-	//   - SM2 key pairs (encryption and decryption -or- signing and verification
-	//     -or- deriving shared secrets) SM2 (China Regions only)
-	//
+	//    * SM2 key pairs (encryption and decryption -or- signing and verification
+	//    -or- deriving shared secrets) SM2 (China Regions only)
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	KeySpec *string `json:"keySpec,omitempty"`
 	// Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
@@ -111,21 +110,20 @@ type KeySpec struct {
 	//
 	// Select only one valid value.
 	//
-	//   - For symmetric encryption KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
+	//    * For symmetric encryption KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
 	//
-	//   - For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
+	//    * For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
 	//
-	//   - For asymmetric KMS keys with RSA key pairs, specify ENCRYPT_DECRYPT
-	//     or SIGN_VERIFY.
+	//    * For asymmetric KMS keys with RSA key pairs, specify ENCRYPT_DECRYPT
+	//    or SIGN_VERIFY.
 	//
-	//   - For asymmetric KMS keys with NIST-recommended elliptic curve key pairs,
-	//     specify SIGN_VERIFY or KEY_AGREEMENT.
+	//    * For asymmetric KMS keys with NIST-recommended elliptic curve key pairs,
+	//    specify SIGN_VERIFY or KEY_AGREEMENT.
 	//
-	//   - For asymmetric KMS keys with ECC_SECG_P256K1 key pairs specify SIGN_VERIFY.
+	//    * For asymmetric KMS keys with ECC_SECG_P256K1 key pairs specify SIGN_VERIFY.
 	//
-	//   - For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
-	//     ENCRYPT_DECRYPT, SIGN_VERIFY, or KEY_AGREEMENT.
-	//
+	//    * For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
+	//    ENCRYPT_DECRYPT, SIGN_VERIFY, or KEY_AGREEMENT.
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	KeyUsage *string `json:"keyUsage,omitempty"`
 	// Creates a multi-Region primary key that you can replicate into other Amazon
@@ -177,20 +175,20 @@ type KeySpec struct {
 	//
 	// If you provide a key policy, it must meet the following criteria:
 	//
-	//   - The key policy must allow the calling principal to make a subsequent
-	//     PutKeyPolicy request on the KMS key. This reduces the risk that the KMS
-	//     key becomes unmanageable. For more information, see Default key policy
-	//     (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
-	//     in the Key Management Service Developer Guide. (To omit this condition,
-	//     set BypassPolicyLockoutSafetyCheck to true.)
+	//    * The key policy must allow the calling principal to make a subsequent
+	//    PutKeyPolicy request on the KMS key. This reduces the risk that the KMS
+	//    key becomes unmanageable. For more information, see Default key policy
+	//    (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
+	//    in the Key Management Service Developer Guide. (To omit this condition,
+	//    set BypassPolicyLockoutSafetyCheck to true.)
 	//
-	//   - Each statement in the key policy must contain one or more principals.
-	//     The principals in the key policy must exist and be visible to KMS. When
-	//     you create a new Amazon Web Services principal, you might need to enforce
-	//     a delay before including the new principal in a key policy because the
-	//     new principal might not be immediately visible to KMS. For more information,
-	//     see Changes that I make are not always immediately visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
-	//     in the Amazon Web Services Identity and Access Management User Guide.
+	//    * Each statement in the key policy must contain one or more principals.
+	//    The principals in the key policy must exist and be visible to KMS. When
+	//    you create a new Amazon Web Services principal, you might need to enforce
+	//    a delay before including the new principal in a key policy because the
+	//    new principal might not be immediately visible to KMS. For more information,
+	//    see Changes that I make are not always immediately visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
+	//    in the Amazon Web Services Identity and Access Management User Guide.
 	//
 	// If you do not provide a key policy, KMS attaches a default key policy to
 	// the KMS key. For more information, see Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default)
