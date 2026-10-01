@@ -51,6 +51,11 @@ resources:
         is_immutable: true
       EnableKeyRotation:
         type: bool
+    exceptions:
+      errors:
+        404:
+          # https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_Errors
+          code: NotFoundException
     hooks:
       sdk_delete_post_build_request:
         template_path: hooks/key/sdk_delete_post_build_request.go.tpl
