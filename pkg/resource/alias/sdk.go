@@ -79,7 +79,7 @@ func (rm *resourceManager) sdkFind(
 	rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
 	if err != nil {
 		var awsErr smithy.APIError
-		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "NotFound" {
+		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "NotFoundException" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -97,7 +97,7 @@ func (rm *resourceManager) sdkFind(
 		resp, err = rm.sdkapi.ListAliases(ctx, input)
 		rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
 		if err != nil {
-			if awsErr, ok := ackerr.AWSError(err); ok && awsErr.ErrorCode() == "NotFound" {
+			if awsErr, ok := ackerr.AWSError(err); ok && awsErr.ErrorCode() == "NotFoundException" {
 				return nil, ackerr.NotFound
 			}
 			return nil, err

@@ -11,6 +11,11 @@ resources:
         references:
           resource: Key
           path: Status.KeyID
+    exceptions:
+      errors:
+        404:
+          # https://docs.aws.amazon.com/kms/latest/APIReference/API_ListAliases.html#API_ListAliases_Errors
+          code: NotFoundException
     renames:
       operations:
         CreateAlias:
@@ -74,6 +79,11 @@ resources:
         references:
           resource: Key
           path: Status.KeyID
+    exceptions:
+      errors:
+        404:
+          # https://docs.aws.amazon.com/kms/latest/APIReference/API_ListGrants.html#API_ListGrants_Errors
+          code: NotFoundException
     tags:
       ignore: true
     update_operation:
