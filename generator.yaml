@@ -11,6 +11,11 @@ resources:
         references:
           resource: Key
           path: Status.KeyID
+    exceptions:
+      errors:
+        404:
+          # https://docs.aws.amazon.com/kms/latest/APIReference/API_ListAliases.html#API_ListAliases_Errors
+          code: NotFoundException
     renames:
       operations:
         CreateAlias:
@@ -51,6 +56,11 @@ resources:
         is_immutable: true
       EnableKeyRotation:
         type: bool
+    exceptions:
+      errors:
+        404:
+          # https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_Errors
+          code: NotFoundException
     hooks:
       sdk_delete_post_build_request:
         template_path: hooks/key/sdk_delete_post_build_request.go.tpl
@@ -69,6 +79,11 @@ resources:
         references:
           resource: Key
           path: Status.KeyID
+    exceptions:
+      errors:
+        404:
+          # https://docs.aws.amazon.com/kms/latest/APIReference/API_ListGrants.html#API_ListGrants_Errors
+          code: NotFoundException
     tags:
       ignore: true
     update_operation:
