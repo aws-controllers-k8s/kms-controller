@@ -7,7 +7,7 @@
 		resp, err = rm.sdkapi.ListAliases(ctx, input)
 		rm.metrics.RecordAPICall("READ_MANY", "ListAliases", err)
 		if err != nil {
-			if awsErr, ok := ackerr.AWSError(err); ok && awsErr.ErrorCode() == "NotFoundException" {
+			if awsErr, ok := ackerr.AWSError(err); ok && awsErr.ErrorCode() == "{{ ResourceExceptionCode .CRD 404 }}" {
 				return nil, ackerr.NotFound
 			}
 			return nil, err
